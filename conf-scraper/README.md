@@ -80,6 +80,55 @@ confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track 
 
 ---
 
+## Summarize & categorize
+
+Pass `--summarize` to run each paper's abstract through an LLM and get a compact output:
+`title`, `summary`, `keywords`, and optionally a `score`.
+
+### Summarize only (summary + keywords)
+
+```bash
+confscraper URL --summarize --model ollama/llama3.2 -o summaries.json
+```
+
+Output per paper:
+```json
+[
+  {
+    "title": "Find My Code Twin: ...",
+    "summary": "The paper presents SNIPPET SEARCH, a code retrieval tool ...",
+    "keywords": ["code search", "semantic clustering", "snippet retrieval", "embeddings", "software engineering"]
+  }
+]
+```
+
+### Summarize + relevance score for a topic
+
+Add `--topic` to score each paper 0–10 against a research topic:
+
+```bash
+confscraper URL --summarize --topic "Green agentic AI" \
+               --model ollama/llama3.2 -o summaries.json
+```
+
+Output per paper:
+```json
+[
+  {
+    "title": "Find My Code Twin: ...",
+    "summary": "The paper presents SNIPPET SEARCH ...",
+    "keywords": ["code search", "semantic clustering", "snippet retrieval", "embeddings", "SE"],
+    "score": 3
+  }
+]
+```
+
+`score` is `0` (completely unrelated) to `10` (directly addresses the topic). Papers with no abstract get `null` for `summary` and `score`.
+
+> `--summarize` uses the same `--model` and `--api-key` flags as `--llm`. See the LLM section below for provider setup.
+
+---
+
 ## LLM-assisted extraction
 
 Pass `--llm` to enable an LLM fallback for pages where the abstract cannot be found by CSS selectors. Supports any [litellm-compatible](https://docs.litellm.ai/docs/providers) provider.
@@ -147,7 +196,9 @@ confscraper URL --llm -o papers.json
 | `--rate` | 5.0 | Max requests per second |
 | `--timeout` | 30.0 | HTTP timeout in seconds |
 | `--llm` | off | Enable LLM fallback for abstract extraction |
-| `--model` | `claude-sonnet-4-6` | LLM model string — any litellm provider (env: `LLM_MODEL`) |
+| `--summarize` | off | Summarize abstracts + extract keywords (replaces full JSON output) |
+| `--topic TEXT` | — | Score each paper's relevance to this topic (0–10); requires `--summarize` |
+| `--model` | `claude-sonnet-4-6` | LLM model for `--llm` and `--summarize` (env: `LLM_MODEL`) |
 | `--api-key` | — | LLM API key — falls back to provider env vars automatically |
 | `-v / --verbose` | off | Debug logging |
 

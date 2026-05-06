@@ -7,6 +7,16 @@ from pathlib import Path
 from confscraper.models import Paper, ScrapeResult
 
 
+def write_summaries(summaries: list[dict], path: Path | None, compact: bool = False) -> None:
+    indent = None if compact else 2
+    text = json.dumps(summaries, indent=indent, ensure_ascii=False)
+    if path is None:
+        sys.stdout.write(text)
+        sys.stdout.write("\n")
+    else:
+        path.write_text(text, encoding="utf-8")
+
+
 def write_json(result: ScrapeResult, path: Path | None, compact: bool = False) -> None:
     indent = None if compact else 2
     text = result.model_dump_json(indent=indent)

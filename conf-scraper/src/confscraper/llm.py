@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 
 # Silence litellm's verbose success logs
 litellm.success_callback = []
+litellm.failure_callback = []
 litellm.set_verbose = False
+litellm.suppress_debug_info = True
 
 # Default model — overridden via --model flag or LLM_MODEL env var
 DEFAULT_MODEL = "claude-sonnet-4-6"
@@ -61,6 +63,7 @@ def _resolve_api_key(model: str, api_key: str | None) -> str | None:
         "groq/": "GROQ_API_KEY",
         "mistral/": "MISTRAL_API_KEY",
         "cohere/": "COHERE_API_KEY",
+        "deepseek/": "DEEPSEEK_API_KEY",
     }
     for prefix, env_var in provider_env.items():
         if model.startswith(prefix):
