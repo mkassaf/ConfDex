@@ -1,0 +1,926 @@
+[
+  {
+    "title": "Designing at Scale: Challenges, Pitfalls, and Lessons Learned",
+    "summary": "This paper discusses the inevitability of architectural mistakes in large-scale software systems, drawing from real-world examples of design decisions that became liabilities. The author identifies recurring patterns of pain and challenges common assumptions about designing for the future, emphasizing conscious trade-offs and reducing long-term negative impacts.",
+    "keywords": [
+      "software architecture",
+      "large-scale systems",
+      "design trade-offs",
+      "technical debt",
+      "system evolution"
+    ],
+    "score": 0
+  },
+  {
+    "title": "How Context-Sensitive Static Analysis Led to the Best Smart Contract Decompiler",
+    "summary": "This paper argues that context-sensitive static analysis is a powerful approach for decompilation, particularly in complex settings like Ethereum Virtual Machine smart contracts. It shows how such analysis can effectively determine program behavior for all inputs, leading to the development of a state-of-the-art smart contract decompiler.",
+    "keywords": [
+      "static analysis",
+      "decompilation",
+      "smart contracts",
+      "Ethereum VM",
+      "context sensitivity"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Find My Code Twin: Improving SNIPPET SEARCH Performance Using LLMs in Practice",
+    "summary": "This paper describes SNIPPET SEARCH, a code clone detection and snippet search framework deployed at Samsung Electronics that uses LLMs for summarization combined with token-level similarity refinement. The system achieved significant performance improvements on the BigCloneBench benchmark and improved test case quality by at least 20% in embedded system projects through LLM-assisted generation. The work demonstrates practical enterprise-scale deployment of AI-powered code search tools.",
+    "keywords": [
+      "code clone detection",
+      "LLM-based summarization",
+      "snippet search",
+      "enterprise software engineering",
+      "code search framework"
+    ],
+    "score": 3
+  },
+  {
+    "title": "R-Log: Incentivizing Log Analysis Capability in LLMs via Reasoning-based Reinforcement Learning",
+    "summary": "This paper introduces R-Log, a method for improving LLM-based log analysis by using a reasoning-based reinforcement learning approach instead of standard supervised fine-tuning. The method first trains the model on over 2,000 reasoning trajectories derived from human operations practices, then refines it through reinforcement learning. Evaluations show R-Log significantly outperforms existing methods, especially on unseen logs (by 228%), and a faster version maintains 93% efficacy with a 5x speedup.",
+    "keywords": [
+      "log analysis",
+      "reinforcement learning",
+      "large language models",
+      "reasoning",
+      "operational data"
+    ],
+    "score": 1
+  },
+  {
+    "title": "PerFrame: Monitoring GUI Loading Performance in Mobile Apps via Semantic Distinguish",
+    "summary": "This paper introduces PerFrame, a framework that uses a multimodal large language model to automatically monitor GUI loading performance in mobile apps by identifying loading start and end frames from screencasts. It reduces manual effort and handles diverse usage environments and animations. Evaluated on real-world data from Meituan, PerFrame significantly improves accuracy over prior methods.",
+    "keywords": [
+      "GUI loading performance",
+      "multimodal large language model",
+      "mobile app testing",
+      "UI animation handling",
+      "automated frame detection"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Automated Software Test Generation at Industry Scale Using a Multi-Agent Architecture and Workflow Integration",
+    "summary": "This paper presents AutoCover, a production system that uses a multi-agent architecture with large language models to automatically generate, validate, and propose software tests at industry scale. AutoCover supports three interaction modes (CLI, Headless, IDE) and has been adopted to generate about 11% of all new tests added to the company's codebase. The main result is that the system effectively raises test coverage while reducing the manual effort required by engineers.",
+    "keywords": [
+      "multi-agent architecture",
+      "test generation",
+      "large language models",
+      "industry-scale",
+      "workflow integration"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Learning without Forgetting: Towards Continual learning of Fault Localization Models in Industrial Software Systems",
+    "summary": "This paper addresses the challenge of fault localization in evolving industrial software systems, where models trained on old data become less effective over time. The authors propose a continual learning framework called Canto that extracts fine-grained program semantics from logs and uses clustering to select representative examples, allowing the model to learn new faults while avoiding catastrophic forgetting of old ones. Evaluated against six baselines, Canto improves fault localization effectiveness by 17% to 45%.",
+    "keywords": [
+      "continual learning",
+      "fault localization",
+      "software testing",
+      "catastrophic forgetting",
+      "industrial software systems"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Memory-Efficient Large Language Models for Program Repair with Semantic-Guided Patch Generation",
+    "summary": "This paper introduces FLAMES, a memory-efficient LLM-based automated program repair technique that replaces beam search with greedy decoding and a semantic-guided best-first search algorithm. FLAMES reduces GPU memory consumption by up to 83% while fixing more bugs than existing methods, correctly repairing 133 bugs on Defects4J and outperforming baselines on other datasets.",
+    "keywords": [
+      "automated program repair",
+      "large language models",
+      "memory efficiency",
+      "semantic guidance",
+      "patch generation"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Func: Reducing the impact of Android framework evolution on malware detection",
+    "summary": "This paper addresses how Android framework updates degrade malware detection by changing APIs and permissions. The authors propose a new representation called Func that links deprecated APIs/permissions to their replacements, using a language model to mine class-level replacements. Applied to four detectors, Func significantly improves F1 scores across Android API levels 9 to 24.",
+    "keywords": [
+      "Android framework evolution",
+      "malware detection",
+      "API deprecation",
+      "permission replacement",
+      "large language model"
+    ],
+    "score": 3
+  },
+  {
+    "title": "Diffploit: Facilitating Cross-Version Exploit Migration for Open Source Library Vulnerabilities",
+    "summary": "Diffploit automates the migration of exploits for open-source library vulnerabilities across different versions by using a diff-driven approach that analyzes behavioral discrepancies. It consists of a Context Module that captures failure symptoms and related code changes, and a Migration Module that iteratively guides an LLM-based adaptation to fix both code-level and environment-level failures. The system successfully migrates 84.2% of exploits on a large-scale Java CVE dataset, outperforming existing tools, and discovers many unreported vulnerable versions.",
+    "keywords": [
+      "exploit migration",
+      "vulnerability reproduction",
+      "diff-driven analysis",
+      "LLM-based adaptation",
+      "open-source library security"
+    ],
+    "score": 1
+  },
+  {
+    "title": "ViTAL: LLM-Powered Taint Analysis for GUI Field Visualization Auditing in Android",
+    "summary": "ViTAL is a framework that combines static analysis with large language models to automatically detect which server-side data fields in Android apps actually get displayed on the user interface, helping audit content for security risks. By mapping server fields to client-side variables, tracking data flow, and using LLMs to summarize code for GUI visualization features, it achieves 93% recall and 79% precision on a new benchmark dataset. The system reveals previously hidden visualized fields, demonstrating practical value for mobile content security auditing.",
+    "keywords": [
+      "taint analysis",
+      "Android GUI auditing",
+      "large language models",
+      "static analysis",
+      "mobile content security"
+    ],
+    "score": 2
+  },
+  {
+    "title": "LLM Test Generation via Iterative Hybrid Program Analysis",
+    "summary": "This paper presents Panta, a technique that combines static analysis and dynamic coverage analysis to guide Large Language Models in generating unit tests with higher branch coverage. By iteratively refining test generation based on feedback from uncovered execution paths, Panta achieves 26% higher line coverage and 23% higher branch coverage over current methods on complex real-world code. The main result is a demonstrably effective approach to automating thorough unit test generation for intricate codebases.",
+    "keywords": [
+      "unit test generation",
+      "static analysis",
+      "dynamic code coverage",
+      "large language models",
+      "iterative refinement"
+    ],
+    "score": 2
+  },
+  {
+    "title": "SEER: Enhancing Chain-of-Thought Code Generation through Self-Exploring Deep Reasoning",
+    "summary": "This paper introduces SEER, a framework that improves chain-of-thought reasoning in code generation by framing it as a decision-making problem. It addresses limitations like limited reasoning diversity, lack of quality assessment, and overthinking by using diverse path exploration, quality-aware model training, and adaptive reasoning. Experiments show SEER significantly outperforms baseline methods on several code generation benchmarks.",
+    "keywords": [
+      "code generation",
+      "chain-of-thought reasoning",
+      "large language models",
+      "decision making",
+      "deep reasoning"
+    ],
+    "score": 0
+  },
+  {
+    "title": "Green Software Engineering in Practice: Quantifying the Impact of Carbon Reduction Strategies in Enterprise Software",
+    "summary": "This paper evaluates carbon emission reduction strategies for an enterprise software application by applying the Software Carbon Intensity (SCI) specification to measure the impact of application-level configurations. Through experiments on a financial administration application, the authors found that garbage collection optimization reduced carbon emissions by up to 30.6%, while other configurations had minimal effect, demonstrating that developers can achieve significant carbon reductions through application-level changes.",
+    "keywords": [
+      "green software engineering",
+      "software carbon intensity",
+      "carbon footprint reduction",
+      "application-level optimization",
+      "enterprise software"
+    ],
+    "score": 6
+  },
+  {
+    "title": "PerfScout: An Adaptive Workload Generator in Software Performance Testing",
+    "summary": "PerfScout is a reinforcement learning-based framework for adaptive workload generation in software performance testing. It uses dynamic breaking point identification and real-time workload adaptation to automate testing, achieving over 82% accuracy and up to 90% efficiency improvement in industrial cloud environments. The system was deployed at Huawei Cloud and outperforms conventional static-threshold methods.",
+    "keywords": [
+      "reinforcement learning",
+      "workload generation",
+      "performance testing",
+      "breaking point identification",
+      "adaptive testing"
+    ],
+    "score": 1
+  },
+  {
+    "title": "NotDec: WebAssembly Decompilation With Inter-Procedural Type Recovery",
+    "summary": "NotDec is a new decompilation framework for WebAssembly bytecode that uses inter-procedural type recovery to produce readable C code. It achieves 100% recompilation success on test suites, far outperforming Ghidra, and recovers 85% of struct member accesses in real-world programs. The tool is efficient, with a lighter variant using up to 97% less time and half the memory of Ghidra.",
+    "keywords": [
+      "WebAssembly decompilation",
+      "type recovery",
+      "inter-procedural analysis",
+      "binary auditing",
+      "reverse engineering"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Why Attention Fails: A Taxonomy of Faults in Attention-Based Neural Networks",
+    "summary": "This paper presents the first comprehensive empirical study of faults in attention-based neural networks, analyzing 555 real-world faults from 96 projects. It develops a taxonomy of seven attention-specific fault categories not captured by existing taxonomies and provides diagnostic heuristics that explain 33.0% of these faults. The main result is that over half of attention-based network failures arise from mechanisms unique to attention architectures.",
+    "keywords": [
+      "attention mechanisms",
+      "fault taxonomy",
+      "neural network failures",
+      "diagnostic heuristics",
+      "attention-based neural networks"
+    ],
+    "score": 2
+  },
+  {
+    "title": "LogFold: Compressing Logs with Structured Tokens and Hybrid Encoding",
+    "summary": "LogFold is a new log compression method that identifies redundancy patterns in structured tokens and uses a type-aware encoding strategy to improve compression. It outperforms existing approaches on public datasets, achieving an average compression ratio improvement of 11.11% with a speed of 9.842 MB/s.",
+    "keywords": [
+      "log compression",
+      "structured tokens",
+      "hybrid encoding",
+      "token classification",
+      "software logs"
+    ],
+    "score": 1
+  },
+  {
+    "title": "IEEE Computer Society Harlan D. Mills Award and Talk by Andreas Zeller: Should Computer Scientists Experiment Less? On the past, present, and future of software engineering research",
+    "summary": "This paper discusses the overemphasis on experimental evaluations in software engineering research, arguing that it has shifted from a quality filter to a competition for benchmark scores. The author suggests that AI agents will soon automate experiments, papers, and reviews, and proposes that researchers should instead focus on human strengths like creativity and abstraction. The main result is a call to redefine researchers' roles away from numerical optimization toward uniquely human capabilities.",
+    "keywords": [
+      "software engineering research",
+      "AI agents",
+      "experiment evaluation",
+      "benchmark optimization",
+      "researcher roles"
+    ],
+    "score": 6
+  },
+  {
+    "title": "WhatsCode: Large-Scale GenAI Deployment for Developer Efficiency at WhatsApp",
+    "summary": "This paper describes the deployment of WhatsCode, a domain-specific AI development system at WhatsApp that evolved from privacy automation to autonomous agentic workflows over 25 months. The system improved privacy verification coverage, generated thousands of accepted code changes, and identified stable human-AI collaboration patterns. The main result is that effective human-AI collaboration, rather than full automation, drives sustainable business impact in large-scale, compliance-relevant environments.",
+    "keywords": [
+      "AI-assisted development",
+      "agentic workflows",
+      "human-AI collaboration",
+      "privacy automation",
+      "large-scale deployment"
+    ],
+    "score": 8
+  },
+  {
+    "title": "Assessing Coherency and Consistency of Code Execution Reasoning by Large Language Models",
+    "summary": "This paper introduces CES, a task to evaluate how well large language models (LLMs) simulate program execution and whether their reasoning is coherent and consistent. The authors find that while frontier LLMs like GPT-4 and DeepSeek-R1 often produce correct outputs, their execution reasoning is frequently incoherent or inconsistent, relying on shortcuts rather than true step-by-step simulation. The study reveals that LLMs show weak or random reasoning consistency across tests, threatening their generalizability in programming tasks like bug prediction and repair.",
+    "keywords": [
+      "LLM evaluation",
+      "program execution simulation",
+      "coherence metric",
+      "reasoning consistency",
+      "code understanding"
+    ],
+    "score": 3
+  },
+  {
+    "title": "Top General Performance = Top Domain Performance? DomainCodeBench: A Multi-domain Code Generation Benchmark",
+    "summary": "This paper introduces DomainCodeBench, a benchmark for evaluating large language models on code generation tasks across 12 specialized software domains and 15 programming languages, containing 2,400 manually verified tasks. The main result is that top general-domain models do not consistently perform well in specific domains, and performance can be improved by around 38% by adding domain-specific knowledge to prompts.",
+    "keywords": [
+      "code generation",
+      "large language models",
+      "domain-specific evaluation",
+      "software engineering benchmark",
+      "performance decoupling"
+    ],
+    "score": 2
+  },
+  {
+    "title": "The SWE-Bench Illusion: When State-of-the-Art LLMs Remember Instead of Reason",
+    "summary": "This paper investigates whether large language models' high performance on the SWE-Bench Verified benchmark reflects genuine reasoning or memorization. The authors introduce diagnostic tasks showing that models achieve up to 76% accuracy in identifying buggy files from issue descriptions alone, but performance drops significantly on tasks outside the benchmark, suggesting data contamination. The findings indicate that current evaluations may overstate LLMs' problem-solving abilities and highlight the need for contamination-resistant benchmarks.",
+    "keywords": [
+      "LLMs",
+      "memorization",
+      "benchmark contamination",
+      "SWE-Bench",
+      "software engineering evaluation"
+    ],
+    "score": 0
+  },
+  {
+    "title": "What’s DAT? Three Case Studies of Measuring Software Development Productivity at Meta With Diff Authoring Time",
+    "summary": "This paper introduces Diff Authoring Time (DAT), a time-based metric for measuring software development productivity by tracking active work time on individual code changes. The authors validate DAT at Meta through observational studies and experiments, finding significant productivity improvements such as a 14% gain from typed mocks in tests and a 33% gain from automatic memoization in the React compiler. The work demonstrates how DAT enables rigorous experimentation on development tools and practices at scale.",
+    "keywords": [
+      "software development productivity",
+      "Diff Authoring Time",
+      "developer telemetry",
+      "controlled experiments",
+      "Meta"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Hallucinating Certificates: Differential Testing of TLS Certificate Validation Using Generative Language Models",
+    "summary": "The paper presents MLCerts, a new method that uses generative language models to create synthetic certificates for differential testing of TLS certificate validation implementations. By exploiting the language-like structure of X.509 certificates and the models' tendency to 'hallucinate' malformed but syntactically valid outputs, MLCerts discovers significantly more discrepancies among five major TLS libraries than prior approaches. The main result is that MLCerts finds 26 out of 30 possible discrepancies, outperforming previous methods by up to 1,200%.",
+    "keywords": [
+      "TLS certificate validation",
+      "differential testing",
+      "generative language models",
+      "synthetic certificate generation",
+      "security testing"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Fuzzing Java Optimizing Compilers with Complex Inter-Class Structures Guided by Heterogeneous Program Graphs",
+    "summary": "This paper introduces InterFuzz, a fuzzing framework that generates Java test cases with complex inter-class structures to find bugs in optimizing compilers like HotSpot and R8. It uses a novel Heterogeneous Program Graph (HPG) to model and manipulate inter-class relationships, and graph complexity metrics to guide test generation. The tool discovered 24 new bugs across multiple compilers, with 16 relying on intricate inter-class structures, outperforming traditional fuzzers.",
+    "keywords": [
+      "fuzzing",
+      "Java compilers",
+      "inter-class structures",
+      "heterogeneous program graph",
+      "optimizing compilers"
+    ],
+    "score": 0
+  },
+  {
+    "title": "META²V2V: Revealing Behavioural Deviations under Mutual Perception in Multi-Vehicle Autonomous Driving",
+    "summary": "This paper introduces META²V2V, a metamorphic testing framework for evaluating autonomous driving systems (ADS) in multi-vehicle scenarios where vehicles share information via V2V communication. The framework injects controlled perturbations into V2V data streams and checks for soundness and robustness issues using metamorphic relations. Experimental results show it finds significantly more violation cases than random testing, revealing behavioral deviations in mutual perception.",
+    "keywords": [
+      "autonomous driving",
+      "V2V communication",
+      "metamorphic testing",
+      "multi-vehicle scenarios",
+      "behavioral deviations"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Beyond the Commit: Developer Perspectives on Productivity with AI Coding Assistants",
+    "summary": "This paper investigates how to measure developer productivity in the age of AI coding assistants, challenging traditional productivity frameworks. Through a large survey of 2,989 developers and 11 in-depth interviews at BNY Mellon, the authors find that a multifaceted approach is needed, revealing conflicting views on AI tool usefulness and identifying six factors including long-term metrics like technical expertise and work ownership. The study argues for incorporating broader human-centered factors when evaluating productivity impacts of AI tools.",
+    "keywords": [
+      "developer productivity",
+      "AI coding assistants",
+      "productivity measurement",
+      "human-centered metrics",
+      "mixed-method research"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Assessing the Sustainability-Quality (SQ) Model: A Multi-Year Empirical Study in Education",
+    "summary": "This paper evaluates the Sustainability-Quality (SQ) Model, a framework for linking software quality attributes with four sustainability dimensions (technical, environmental, economic, social), through a multi-year educational study. Master's students applied the model to 63 projects, producing 275 concerns with 88% classification accuracy, showing the model is usable by novices but that sustainability-specific concerns like carbon footprint are less frequently identified. The study provides empirical evidence of the model's reliability and identifies areas for improving sustainability education in software engineering.",
+    "keywords": [
+      "Sustainability-Quality Model",
+      "software engineering",
+      "sustainability assessment",
+      "quality attributes",
+      "empirical study"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Fairness-First Design Thinking for Software Architecture",
+    "summary": "This paper introduces a fairness-first Design Thinking approach for software architecture to address fairness concerns early in the design process, implemented and evaluated in a graduate course. The main findings highlight the importance of fairness theory and context identification, proposing composite views to manage cross-cutting fairness concerns. The approach provides implications for both software design and education.",
+    "keywords": [
+      "fairness-first design",
+      "software architecture",
+      "design thinking",
+      "fairness concerns",
+      "software engineering education"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Enforcing Control Flow Integrity on DeFi Smart Contracts",
+    "summary": "This paper presents CrossGuard, a framework that enforces control flow integrity on DeFi smart contracts to block attacks in real time. It is based on the discovery that attack transactions introduce novel control flows not seen in benign transactions. CrossGuard effectively prevents 35 out of 37 historical attacks with a low false positive rate and minimal gas overhead.",
+    "keywords": [
+      "control flow integrity",
+      "DeFi security",
+      "smart contracts",
+      "attack detection",
+      "runtime monitoring"
+    ],
+    "score": 0
+  },
+  {
+    "title": "AnchorDiff: Binary OSS Version Identification Method Based on Anchor Node Slicing",
+    "summary": "This paper introduces AnchorDiff, a method for identifying the version of open-source software embedded in binary files by using 'anchor nodes' to partition version histories into regions. It improves accuracy over existing methods, achieving up to 97.17% accuracy on large datasets while reducing storage needs by 36 times. The main result is a more efficient and accurate binary version identification framework.",
+    "keywords": [
+      "binary software version identification",
+      "open-source software",
+      "anchor node slicing",
+      "binary code similarity",
+      "N-day vulnerability detection"
+    ],
+    "score": 0
+  },
+  {
+    "title": "Generating Energy-Efficient Code via Large-Language Models - Where are we now?",
+    "summary": "This paper empirically evaluates the energy efficiency of Python code generated by large language models (LLMs) compared to human-written code and code from a green software expert. Testing multiple LLMs and prompting techniques across different hardware platforms, the study finds that expert human code is consistently 17–30% more energy-efficient, while LLMs surprisingly beat average human code on one platform. The results show that current LLMs cannot match an experienced green developer for energy-efficient code generation.",
+    "keywords": [
+      "energy efficiency",
+      "large language models",
+      "code generation",
+      "green software",
+      "Python"
+    ],
+    "score": 8
+  },
+  {
+    "title": "Depradar: Agentic Coordination for Context-Aware Defect Impact Analysis in Deep Learning Libraries",
+    "summary": "DepRadar is a framework that uses multiple coordinated AI agents to automatically analyze defects in deep learning libraries (like Transformers) and determine if they affect downstream user programs. It extracts defect semantics from code changes, synthesizes trigger conditions, and statically checks client code, achieving 90% precision in defect identification and 80% precision in impact analysis. The system helps users understand and mitigate risks from library defects without needing to upgrade versions.",
+    "keywords": [
+      "agent coordination",
+      "defect impact analysis",
+      "deep learning libraries",
+      "static analysis",
+      "AI software maintenance"
+    ],
+    "score": 4
+  },
+  {
+    "title": "Intelligent Triage: Interpretable Incident Triage Workflow using LLM Extracted Triage Reasoning",
+    "summary": "This paper presents Intelligent Triage, a workflow that uses large language models to extract step-wise triage reasoning (called 'triage rules') from incident histories, rather than relying on end-to-end solution retrieval. The approach improves accuracy by 10 percentage points and reduces time to mitigation, while also providing explainable justifications to upstream analysis tools and downstream response teams. The system was deployed across Microsoft Azure services for over six months with validated positive results.",
+    "keywords": [
+      "incident triage",
+      "large language models",
+      "cloud services",
+      "explainable AI",
+      "automated reasoning"
+    ],
+    "score": 3
+  },
+  {
+    "title": "TerraFormer: Automated Infrastructure-as-Code with LLMs Fine-Tuned via Policy-Guided Verifier Feedback",
+    "summary": "TerraFormer is a neuro-symbolic framework that automates Infrastructure-as-Code (IaC) generation and mutation using large language models fine-tuned with formal verifier feedback. It improves correctness over its base model by up to 19.60% and outperforms even much larger models like GPT-4.1 and DeepSeek-R1. The paper's main result shows that combining supervised fine-tuning with reinforcement learning from policy and syntax verifiers yields high compliance with best practices and security standards.",
+    "keywords": [
+      "Infrastructure-as-Code",
+      "LLM fine-tuning",
+      "reinforcement learning from verifier feedback",
+      "TerraFormer",
+      "policy compliance"
+    ],
+    "score": 4
+  },
+  {
+    "title": "Scalpel: Automotive Deep Learning Framework Testing via Assembling Model Components",
+    "summary": "Scalpel is a testing method for deep learning frameworks used in autonomous driving. It generates test input models by assembling model components like heads, necks, and backbones to detect crashes and bugs caused by complex deployment environments. The main result is that Scalpel found 16 crashes and 21 bugs in Apollo, with significant improvements in efficiency over existing methods.",
+    "keywords": [
+      "deep learning testing",
+      "autonomous driving",
+      "model components",
+      "bug detection",
+      "automotive framework"
+    ],
+    "score": 1
+  },
+  {
+    "title": "CombCT: Compiler Testing via Combinatorial Testing",
+    "summary": "This paper introduces CombCT, a novel compiler testing approach that uses combinatorial testing to efficiently explore optimization sequences, which are a major source of compiler bugs. The method incorporates techniques like dynamic sequence adaptation and diversity augmentation to detect more unique bugs than existing state-of-the-art methods. The main result is that CombCT found 14 previously unknown bugs in GCC and LLVM, most of which have been confirmed or fixed.",
+    "keywords": [
+      "compiler testing",
+      "combinatorial testing",
+      "optimization sequences",
+      "bug detection",
+      "GCC LLVM"
+    ],
+    "score": 0
+  },
+  {
+    "title": "GUISpector: An MLLM Agent Framework for Automated Verification of Natural Language Requirements in GUI Prototypes",
+    "summary": "GUISpector is a framework that uses a multimodal large language model (MLLM) agent to automatically check whether natural language requirements are met in GUI prototypes. It plans and executes verification steps, extracts detailed feedback for developers, and can integrate into LLM-driven code generation loops. The system was tested on 150 requirements across diverse apps, showing effective detection of requirement satisfaction and violations.",
+    "keywords": [
+      "GUI testing",
+      "automatic verification",
+      "MLLM agent",
+      "natural language requirements",
+      "software engineering"
+    ],
+    "score": 0
+  },
+  {
+    "title": "GPTrace: Effective Crash Deduplication Using LLM Embeddings",
+    "summary": "GPTrace uses large language model embeddings to group duplicate crash reports from fuzzing campaigns, reducing manual analysis effort. It converts crash data into embedding vectors and clusters them, outperforming traditional stack trace methods across 300,000+ crash inputs. The main result is improved crash deduplication accuracy and flexibility compared to existing approaches.",
+    "keywords": [
+      "crash deduplication",
+      "fuzzing",
+      "LLM embeddings",
+      "clustering",
+      "software vulnerability analysis"
+    ],
+    "score": 2
+  },
+  {
+    "title": "StorFuzz: Using Data Diversity to Overcome Fuzzing Plateaus",
+    "summary": "StorFuzz is a new fuzzing technique that overcomes performance plateaus by tracking memory stores to capture hidden program behavior, rather than relying solely on code coverage. It diversifies test corpora to help fuzzers find new bugs, discovering 50 new bugs in well-tested projects like VLC and PHP. The approach outperforms existing fuzzers on multiple benchmarks and is complementary to static-data-guided methods.",
+    "keywords": [
+      "fuzzing",
+      "data coverage",
+      "bug discovery",
+      "software testing",
+      "memory stores"
+    ],
+    "score": 0
+  },
+  {
+    "title": "Knowledge Matters: Injecting Project and Testing Knowledge into LLM-based Unit Test Generation",
+    "summary": "This paper introduces KTester, a framework that improves LLM-based unit test generation by injecting project-specific knowledge and testing domain expertise. It separates test design from method generation and uses multi-perspective prompting, resulting in more correct, maintainable, and readable tests. Evaluations show KTester outperforms existing methods on correctness, coverage, and human-judged quality.",
+    "keywords": [
+      "unit test generation",
+      "large language models",
+      "project-specific knowledge",
+      "test maintainability",
+      "static analysis"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Towards Bridging Language Gaps in OSS with LLM-Driven Documentation Translation",
+    "summary": "This paper evaluates how well large language models (LLMs) like ChatGPT-4 and Claude can translate open-source technical documentation, which mixes natural language, code, URLs, and markdown. The authors find that LLMs produce accurate semantic translations but often fail to preserve formatting and technical details. The study suggests both potential and limitations for using LLMs to automate documentation translation in open-source projects.",
+    "keywords": [
+      "LLM",
+      "documentation translation",
+      "open source software",
+      "software engineering",
+      "technical documentation"
+    ],
+    "score": 0
+  },
+  {
+    "title": "A Large-Scale Empirical Study of Secret Key Leakage in Hugging Face Spaces",
+    "summary": "This paper presents the first large-scale empirical study of secret key leakage in Hugging Face Spaces, analyzing over 300,000 public repositories. The authors developed 'Secret Reviewer,' a framework combining static analysis and LLM-assisted detection, and found nearly 10,000 repositories with leaked secrets, including many active credentials from major AI providers. The study highlights significant security risks and calls for improved security practices in AI platforms.",
+    "keywords": [
+      "secret key leakage",
+      "Hugging Face Spaces",
+      "AI platform security",
+      "static analysis",
+      "LLM-assisted detection"
+    ],
+    "score": 2
+  },
+  {
+    "title": "How Good are Input Grammar Miners? An Empirical Study",
+    "summary": "This paper evaluates several input grammar mining tools by measuring both the accuracy and diversity of the grammars they produce. The authors find that previous evaluations were biased toward short inputs, and that precision and recall drop significantly when deeper combinations of grammar rules are tested. The study concludes that current grammar miners still have room for improvement, especially for complex input languages.",
+    "keywords": [
+      "grammar mining",
+      "input grammar",
+      "empirical study",
+      "evaluation",
+      "k-path coverage"
+    ],
+    "score": 0
+  },
+  {
+    "title": "Catching License Changes Before They Cost: Leveraging LLMs to Analyze License Evolution in Open Source Software - Solution to challenge #13",
+    "summary": "This paper proposes using LLMs to automatically track and analyze license changes in open source software over time, aiming to detect potential compliance issues before they become costly. The main result is a solution to a specific challenge that enables early detection of license evolution, helping developers maintain legal compliance.",
+    "keywords": [
+      "LLMs",
+      "license evolution",
+      "open source software",
+      "license compliance",
+      "change detection"
+    ],
+    "score": 2
+  },
+  {
+    "title": "SEALing the Gap: A Reference Framework for LLM Inference Carbon Estimation via Multi-Benchmark Driven Embodiment",
+    "summary": "This paper proposes SEAL, a reference framework for estimating the carbon footprint of LLM inference at the per-prompt level, addressing the growing sustainability concerns as inference emissions surpass training emissions. The framework uses multi-benchmark-driven machine learning models to provide accurate carbon estimates, with early validation showing promising results. It aims to standardize sustainability assessment across the LLM ecosystem.",
+    "keywords": [
+      "LLM inference",
+      "carbon footprint estimation",
+      "sustainability",
+      "machine learning",
+      "green AI"
+    ],
+    "score": 8
+  },
+  {
+    "title": "Sapling: Quantifying and Measuring the Maturity of the RISC-V Software Ecosystem",
+    "summary": "This paper introduces Sapling, a framework that systematically evaluates the maturity of the RISC-V software ecosystem across five domains and thirty components using six dimensions. The results show the ecosystem is still developing but steadily advancing, with recommendations provided for further growth. The main contribution is a quantitative method to assess and guide improvements in RISC-V software readiness.",
+    "keywords": [
+      "RISC-V",
+      "software ecosystem maturity",
+      "open-source hardware",
+      "ecosystem evaluation",
+      "quantitative assessment"
+    ],
+    "score": 1
+  },
+  {
+    "title": "No Shot in the Dark: Efficient Context-Free Language Reachability via Context-Aware Tabulation",
+    "summary": "This paper introduces context-aware tabulation (CAT), a method that adds limited context sensitivity to context-free language reachability to eliminate unproductive edge derivations. The approach speeds up reachability solving by up to 2.13x and reduces memory usage by up to 50% compared to existing solvers.",
+    "keywords": [
+      "context-free language reachability",
+      "static program analysis",
+      "tabulation algorithm",
+      "context sensitivity",
+      "performance optimization"
+    ],
+    "score": 1
+  },
+  {
+    "title": "SSAR: A Novel Software Architecture Recovery Approach Enhancing Accuracy and Scalability",
+    "summary": "This paper introduces SSAR, a new software architecture recovery method that combines semantic similarity and structural dependencies between files to build a weighted graph, then uses an optimized community detection algorithm for modularization. Experiments on nine open-source projects show it improves accuracy by up to 500% and reduces execution time by 5% to 99% compared to existing techniques.",
+    "keywords": [
+      "software architecture recovery",
+      "community detection",
+      "semantic similarity",
+      "structural dependencies",
+      "modularization"
+    ],
+    "score": 0
+  },
+  {
+    "title": "An Ontology-Based Approach to Security Risk Identification for Container Deployments in OT Contexts",
+    "summary": "This paper presents the Container Security Risk Ontology (CSRO), a model-based approach for automating security risk identification in container deployments within operational technology (OT) environments. The ontology integrates key domains including adversarial behavior, attack scenarios, and risk assessment rules to enable reproducible and interpretable risk analysis. A case study demonstrates that CSRO can automatically calculate risk levels from deployment artifacts, addressing challenges of hybrid IT/OT architectures and fragmented stakeholder knowledge.",
+    "keywords": [
+      "container security",
+      "risk ontology",
+      "operational technology",
+      "cloud-native security",
+      "automated risk assessment"
+    ],
+    "score": 2
+  },
+  {
+    "title": "EmbedAgent: Benchmarking Large Language Models in Embedded System Development",
+    "summary": "This paper presents EmbedAgent, a benchmark for evaluating large language models on embedded system development tasks like programming, circuit design, and platform migration. The main finding is that current LLMs, including DeepSeek-R1, perform modestly (e.g., 55.6% pass rate on simple tasks) and struggle with cross-platform code migration. The authors propose retrieval-augmented generation and compiler feedback strategies, which improve performance.",
+    "keywords": [
+      "LLMs",
+      "embedded systems",
+      "benchmark",
+      "circuit design",
+      "cross-platform migration"
+    ],
+    "score": 1
+  },
+  {
+    "title": "The Undecidability of Overfitting in Automated Program Repair",
+    "summary": "This paper argues that overfitting in automated program repair is not merely a practical issue caused by weak test suites, but is fundamentally undecidable due to the lack of complete specifications. It reframes overfitting as an inherent boundary of the problem rather than a solvable bug. The authors call for future research to accept and work within this limitation by developing methods to quantify and reason about overfitting.",
+    "keywords": [
+      "automated program repair",
+      "overfitting",
+      "undecidability",
+      "test suites",
+      "partial specifications"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Debugging Performance Issues in WebAssembly Runtimes via Mutation-based Inference",
+    "summary": "This paper introduces WarpL, a mutation-based tool that identifies suboptimal instruction sequences causing performance issues in WebAssembly runtimes. By comparing machine code of original and mutated programs, it pinpoints root causes, successfully diagnosing 10 out of 12 real-world issues and uncovering six new bugs in Wasmtime.",
+    "keywords": [
+      "WebAssembly",
+      "performance debugging",
+      "mutation-based inference",
+      "compiler optimization",
+      "Wasm runtime"
+    ],
+    "score": 0
+  },
+  {
+    "title": "An Eye for AI: Eye-Tracking the Micro-Interruptions of GenAI Code Suggestions",
+    "summary": "This paper investigates the cognitive impact of AI-generated code suggestions on developers by using eye-tracking technology. The main finding is that many suggestions are ignored or quickly dismissed, and even brief reviews interrupt developer flow. The authors propose that AI coding tools should be more context-aware to reduce cognitive overhead.",
+    "keywords": [
+      "eye-tracking",
+      "generative AI",
+      "code suggestions",
+      "developer cognition",
+      "micro-interruptions"
+    ],
+    "score": 3
+  },
+  {
+    "title": "Inside Out: Uncovering How Comment Internalization Steers LLMs for Better or Worse",
+    "summary": "This paper investigates how Large Language Models (LLMs) internalize code comments as distinct concepts during software engineering tasks. Using Concept Activation Vectors, the authors show that activating or deactivating these comment concepts can shift task performance by -90% to +67%, with code summarization most sensitive to comments and code completion least. The findings suggest a new approach for building SE tools that manipulate internal concept representations instead of just processing surface-level input.",
+    "keywords": [
+      "LLM interpretability",
+      "concept activation vectors",
+      "code comments",
+      "software engineering tasks",
+      "latent representations"
+    ],
+    "score": 2
+  },
+  {
+    "title": "A First Look at Model Supply Chain: From the Risk Perspective",
+    "summary": "This paper constructs the first comprehensive model supply chain from Hugging Face, analyzing 1.82 million models and 0.54 million dependency relations. It characterizes usage, evolution, quality, and risks within the supply chain and offers actionable recommendations for various stakeholders.",
+    "keywords": [
+      "model supply chain",
+      "Hugging Face",
+      "AI model dependencies",
+      "risk management",
+      "model provenance"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Exploring and Improving Real-World Vulnerability Data Generation via Prompting Large Language Models",
+    "summary": "This paper explores using large language models (LLMs) to generate realistic vulnerability data for training security tools. It introduces a prompting strategy called VICS that achieves up to 93% success in injecting vulnerabilities, including multi-line flaws, and shows that this generated data improves downstream vulnerability analysis models by up to 36.2% accuracy. The main result is that LLM-generated vulnerability data can outperform even the most advanced LLMs directly performing vulnerability analysis.",
+    "keywords": [
+      "vulnerability generation",
+      "large language models",
+      "prompting strategies",
+      "software security",
+      "data augmentation"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Project-Level Resource Leak Detection through Agent-based Ownership Analysis and Repair Pattern Verification",
+    "summary": "This paper presents AROP, a framework that combines LLM-based agents with data-flow analysis to detect resource leaks at the project level, overcoming limitations of traditional static analysis and pure LLM approaches. Evaluated on benchmarks and real-world projects, AROP achieves high precision (91%) and discovers 106 new defects, with 28 patches accepted by developers.",
+    "keywords": [
+      "resource leak detection",
+      "LLM-based agents",
+      "data-flow analysis",
+      "project-level analysis",
+      "repair pattern verification"
+    ],
+    "score": 3
+  },
+  {
+    "title": "Understanding DevOps Security of Google Workspace Apps",
+    "summary": "This paper investigates the DevOps security mechanisms of Google Workspace add-ons, focusing on the development, deployment, and operation lifecycle. Using a hybrid static and dynamic analysis on 5,300 add-ons, it reveals serious vulnerabilities like source code leakage, code tampering, and secret key exposure, affecting 274 add-ons with over 100,000 users total. The main result highlights a concerning lack of security in the add-on ecosystem, including exposure of sensitive developer keys.",
+    "keywords": [
+      "DevOps security",
+      "Google Workspace add-ons",
+      "source code leakage",
+      "third-party application vulnerabilities",
+      "static and dynamic analysis"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Towards Automating Domain-Specific Data Generation for Text-to-SQL: A Comprehensive Approach",
+    "summary": "This paper introduces SelectCraft, a method for automatically generating domain-specific Text-to-SQL datasets to address the scarcity of high-quality training data. The authors create a large financial dataset called BanQies with over 1 million samples and fine-tune a new language model, BanQL, which shows improved accuracy and generalizability on Text-to-SQL tasks. The work aims to enhance the reliability of natural language interfaces in software systems.",
+    "keywords": [
+      "Text-to-SQL",
+      "data generation",
+      "domain-specific datasets",
+      "large language models",
+      "financial data"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Towards Scalable and Interpretable Mobile App Risk Analysis via Large Language Models",
+    "summary": "This paper introduces Mars, a system that uses Large Language Models (LLMs) to automatically analyze mobile apps for security risks, reducing the need for manual human review. It employs a pre-built risk identification tree to filter relevant app features before LLM analysis, improving accuracy and generating transparent evidence chains. The system achieved strong performance (F1-scores of 0.838 for risk identification and 0.934 for evidence retrieval) and boosted analyst efficiency by 60-90% in a user study.",
+    "keywords": [
+      "mobile app security",
+      "large language models",
+      "risk analysis",
+      "automated vetting",
+      "evidence chain"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Environment-Aware Code Generation: How far are We?",
+    "summary": "This paper introduces the problem of Environment-Aware Code Generation (EACG), where LLMs must generate code that works under specific user software environments, not just isolated functions. The authors create a benchmark called VersiBCB from real Python projects and test adaptation strategies like retrieval-augmented generation, mixture-of-experts, and memory-augmented generation. Their results show that current LLMs struggle with environment-specific code, but the proposed strategies improve compatibility and executability.",
+    "keywords": [
+      "environment-aware code generation",
+      "large language models",
+      "software environment compatibility",
+      "code generation benchmark",
+      "AI-assisted programming"
+    ],
+    "score": 3
+  },
+  {
+    "title": "NB2P: Generating Data Science Pipelines from Computational Notebooks",
+    "summary": "This paper presents NB2P, a system that automatically extracts data science pipelines from computational notebooks. It uses abstract syntax tree analysis and semantic segmentation to group data operations into pipeline stages, outperforming existing methods.",
+    "keywords": [
+      "data science pipelines",
+      "computational notebooks",
+      "semantic segmentation",
+      "abstract syntax tree",
+      "pipeline extraction"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Characterizing Regression Bug‑Inducing Changes and Improving LLM‑Based Regression Bug Detection",
+    "summary": "This paper analyzes 280 regression bugs from open-source Java projects to characterize the types of code changes that introduce them. The authors find that regression bugs often stem from atomic activities like feature additions or bug fixes, with performance improvements and refactoring being common culprits. They also develop a taxonomy of root causes and construct an LLM-based tool, LLM4Reg, that improves the detection and explanation of regression bugs compared to existing LLM approaches.",
+    "keywords": [
+      "regression bugs",
+      "bug-inducing changes",
+      "large language models",
+      "LLM4Reg",
+      "Java projects"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Model Discovery and Graph Simulation: A Lightweight Gateway to Chaos Engineering",
+    "summary": "This paper presents a lightweight approach to chaos engineering by automatically discovering a service-dependency graph from existing telemetry data and using it to estimate availability under fail-stop faults. The main result is that a simple connectivity-only model, automatically built from artifacts like distributed traces, provides fast and low-risk availability estimates that closely match live fault-injection results. This enables teams to triage expensive chaos experiments and gain real-time resilience signals as the system evolves.",
+    "keywords": [
+      "chaos engineering",
+      "model discovery",
+      "availability estimation",
+      "service dependency graph",
+      "resilience testing"
+    ],
+    "score": 3
+  },
+  {
+    "title": "Unveiling the Potential of Diffusion Large Language Models in Software Engineering Tasks: An Empirical Study",
+    "summary": "This paper evaluates Diffusion Large Language Models (DLLMs) on software engineering tasks like code generation, defect detection, and program repair, comparing them to autoregressive LLMs. On a benchmark of over 50,000 tasks, 7B-parameter DLLMs achieved 30% better average accuracy and 113% improvement in cross-file repair, with lower latency. The results suggest DLLMs are a more effective paradigm for software engineering tasks.",
+    "keywords": [
+      "Diffusion LLMs",
+      "software engineering",
+      "code generation",
+      "program repair",
+      "defect detection"
+    ],
+    "score": 2
+  },
+  {
+    "title": "MAJIT: Just-in-Time Detection of Compatibility Issues in Android and iOS Apps through Large Language Model-based Multi-Agent Collaboration",
+    "summary": "The paper presents MAJIT, a multi-agent system that uses large language models to detect compatibility issues in Android and iOS apps at the moment code changes are made. It analyzes code diffs to identify problems related to system versions, devices, or screen sizes, achieving high precision and recall. The main result is that the approach can detect these issues with over 96% accuracy.",
+    "keywords": [
+      "mobile app compatibility",
+      "bug detection",
+      "multi-agent collaboration",
+      "large language models",
+      "just-in-time analysis"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Atomizer: An LLM-based Collaborative Multi-Agent Framework for Intent-Driven Commit Untangling",
+    "summary": "Atomizer is a multi-agent framework that uses large language models to untangle composite software commits by inferring the semantic intent of each code change. It introduces an Intent-Oriented Chain-of-Thought strategy and a collaborative grouper-reviewer loop to iteratively refine groupings, outperforming existing graph-based methods by over 5-6% on benchmark datasets.",
+    "keywords": [
+      "commit untangling",
+      "multi-agent framework",
+      "large language models",
+      "semantic intent",
+      "software maintenance"
+    ],
+    "score": 0
+  },
+  {
+    "title": "ConfLogger: Enhance Systems' Configuration Diagnosability through Configuration Logging",
+    "summary": "This paper presents ConfLogger, a tool that combines configuration-aware static taint analysis with LLM-based log generation to improve how software systems log configuration-related information for easier diagnosis of misconfigurations. The main result is that ConfLogger-enhanced logging enables 100% accuracy in error localization for silent misconfigurations and speeds up troubleshooting by 1.25× while improving accuracy by 251.4% in user studies.",
+    "keywords": [
+      "configuration logging",
+      "diagnosability",
+      "misconfiguration",
+      "static taint analysis",
+      "LLM-based log generation"
+    ],
+    "score": 0
+  },
+  {
+    "title": "Context-Free Grammar Inference for Complex Programming Languages in Black Box Settings",
+    "summary": "This paper presents Crucio, a new method for inferring context-free grammars of complex programming languages like C, C++, and Java in black-box settings. Unlike prior tools that fail to scale, Crucio uses a decomposition forest and distributional matrix to efficiently extract short examples, achieving successful grammar inference with significantly improved recall and F1 scores.",
+    "keywords": [
+      "grammar inference",
+      "context-free grammar",
+      "programming languages",
+      "black-box settings",
+      "decomposition"
+    ],
+    "score": 1
+  },
+  {
+    "title": "LoopSCC: Summarizing Complex Multi-branch Nested Loops via Periodic Oscillation Interval",
+    "summary": "This paper presents LoopSCC, a tool for summarizing complex multi-branch nested loops using symbolic analysis. It handles loops with irregular jumps and non-functional variables by constructing a path graph and using oscillation intervals to model loop transitions. The tool achieves 100% precision on tested loops and helped discover 18 new vulnerabilities in IoT software.",
+    "keywords": [
+      "loop summarization",
+      "symbolic analysis",
+      "static analysis",
+      "control flow graph",
+      "vulnerability detection"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Efficient Strong Updates For Path Sensitive Data Dependence Analysis",
+    "summary": "This paper presents a method to speed up path-sensitive data dependence analysis by handling strong updates more efficiently. The key insight is to quickly resolve most store-load relationships using a must-kill relation, reserving the expensive path-sensitive analysis only for the difficult remaining cases. The result is significant speed-ups and improved state coverage in static vulnerability detection.",
+    "keywords": [
+      "path-sensitive analysis",
+      "data dependence",
+      "strong update",
+      "static analysis",
+      "vulnerability detection"
+    ],
+    "score": 1
+  },
+  {
+    "title": "Change And Cover: Last-Mile, Pull Request-Based Regression Test Augmentation",
+    "summary": "ChaCo is an LLM-based tool that automatically generates regression tests for uncovered lines in pull requests (PRs) to close the 'last-mile' testing gap. It extracts relevant test context, integrates new tests into the existing suite, and evaluates on 145 PRs from SciPy, Qiskit, and Pandas, helping 30% of PRs achieve full patch coverage at low cost. Human reviewers rated the tests highly, and multiple submitted tests were merged into real projects, including two that uncovered new bugs.",
+    "keywords": [
+      "regression test augmentation",
+      "pull request testing",
+      "LLM-based test generation",
+      "code coverage",
+      "automated testing"
+    ],
+    "score": 2
+  },
+  {
+    "title": "Relax with Capybaras",
+    "summary": "This is a placeholder presentation slot with no actual content, intended to fill time due to program changes. It offers viewers the option to watch relaxing capybara videos or end the session. There is no research or technical result presented.",
+    "keywords": [
+      "placeholder",
+      "program change",
+      "relaxation",
+      "capybara",
+      "empty session"
+    ],
+    "score": 0
+  },
+  {
+    "title": "One Signature, Multiple Payments: Demystifying and Detecting Signature Replay Vulnerabilities in Smart Contracts",
+    "summary": "This paper studies signature replay vulnerabilities (SRVs) in smart contracts, where signatures are reused across multiple transactions without proper checks. The authors analyzed audit reports, classified five SRV types, and built LASiR, a tool combining LLMs with static taint analysis and symbolic execution to detect these vulnerabilities. Their large-scale evaluation across four blockchains found SRVs widespread, affecting contracts holding $4.76 million in active assets, with LASiR achieving an 87.90% F1-score.",
+    "keywords": [
+      "signature replay vulnerability",
+      "smart contract security",
+      "large language models",
+      "static taint analysis",
+      "blockchain"
+    ],
+    "score": 2
+  },
+  {
+    "title": "USCSA: Evolution-Aware Security Analysis for Proxy-Based Upgradeable Smart Contracts",
+    "summary": "This paper introduces USCSA, a tool that analyzes security risks in upgradeable smart contracts by comparing code changes between versions using Abstract Syntax Tree differences and large language models. It achieves high precision and recall in detecting upgrade-induced vulnerabilities like reentrancy and access control flaws, based on a large dataset of real-world contract vulnerabilities.",
+    "keywords": [
+      "smart contract security",
+      "upgradeable contracts",
+      "vulnerability detection",
+      "abstract syntax tree",
+      "large language models"
+    ],
+    "score": 0
+  }
+]
