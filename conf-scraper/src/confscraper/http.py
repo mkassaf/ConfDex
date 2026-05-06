@@ -11,7 +11,7 @@ from confscraper import __version__
 
 logger = logging.getLogger(__name__)
 
-USER_AGENT = f"confscraper/{__version__} (+github.com/mkassaf/conf-scraper)"
+USER_AGENT = f"confscraper/{__version__} (+github.com/mkassaf/ConfDex)"
 
 
 def _is_retryable(exc: BaseException) -> bool:

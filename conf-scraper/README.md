@@ -10,12 +10,12 @@ Works with any `conf.researchr.org` URL — track pages, workshop home pages, an
 
 ```bash
 # From source
-git clone https://github.com/mkassaf/conf-scraper.git
+git clone https://github.com/mkassaf/ConfDex.git
 cd conf-scraper
 pip install -e .
 
 # Directly from GitHub
-pip install git+https://github.com/mkassaf/conf-scraper.git
+pip install git+https://github.com/mkassaf/ConfDex.git
 ```
 
 After install, verify it works:
