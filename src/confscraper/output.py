@@ -15,7 +15,7 @@ _PAPER_FIELDS = [
 ]
 
 # Columns for --summarize output
-_SUMMARY_FIELDS = ["title", "summary", "keywords", "score"]
+_SUMMARY_FIELDS = ["title", "source_url", "doi", "summary", "keywords", "score"]
 
 
 def _write_csv(rows: list[dict], fieldnames: list[str], path: Path | None) -> None:

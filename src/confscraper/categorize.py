@@ -119,7 +119,7 @@ def categorize_paper(
     Returns a dict: title, summary, keywords, and (if topic given) score.
     Returns nulls if the paper has no abstract or if the LLM call fails.
     """
-    base: dict = {"title": paper.title}
+    base: dict = {"title": paper.title, "source_url": paper.source_url, "doi": paper.doi}
     if topic is not None:
         base["score"] = None
 
@@ -141,6 +141,8 @@ def categorize_paper(
 
     result = {
         "title": paper.title,
+        "source_url": paper.source_url,
+        "doi": paper.doi,
         "summary": data.get("summary"),
         "keywords": data.get("keywords", []),
     }
