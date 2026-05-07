@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import re
 from urllib.parse import urljoin
 
-from playwright.async_api import async_playwright, Page
+from playwright.async_api import async_playwright
+from selectolax.parser import HTMLParser
 
 from confscraper import __version__
 
 logger = logging.getLogger(__name__)
 
 USER_AGENT = f"confscraper/{__version__} (+github.com/mkassaf/ConfDex)"
+
+_AJAX_CONCURRENCY = 8
 
 
 async def fetch_rendered(url: str, wait_selector: str = "body") -> str:
@@ -30,12 +34,24 @@ async def fetch_rendered(url: str, wait_selector: str = "body") -> str:
         return html
 
 
+def _detail_urls_from_html(html: str, base_url: str) -> list[str]:
+    """Extract /details/.../{id}/... URLs from an HTML fragment."""
+    found = []
+    for m in re.finditer(r"/details/[^\s\"'<>\\]+/\d+[^\s\"'<>\\]*", html):
+        url = urljoin(base_url, m.group())
+        if re.search(r"/details/[^/]+/[^/]+/\d+", url):
+            found.append(url)
+    return found
+
+
 async def discover_papers_via_browser(url: str) -> list[str]:
     """
-    For JS-heavy pages (home/program pages), use a headless browser to:
-    1. Render the page fully
-    2. Collect all visible /details/ links
-    3. Click each event-modal trigger, capture AJAX-loaded detail URLs from modals
+    For JS-heavy pages (home/program pages):
+    1. Render the page with Playwright
+    2. Collect all static /details/ links
+    3. For each data-event-modal ID, trigger the jQuery click handler
+       and capture the JSON response (which contains the modal HTML)
+    4. Parse detail URLs from the modal HTML fragments
     """
     logger.info("Browser-based discovery for %s", url)
     detail_urls: set[str] = set()
@@ -45,61 +61,60 @@ async def discover_papers_via_browser(url: str) -> list[str]:
         context = await browser.new_context(user_agent=USER_AGENT)
         page = await context.new_page()
 
-        # Intercept navigation and AJAX responses to harvest detail URLs
-        async def on_response(response):
+        # Collect modal AJAX responses as they arrive
+        modal_htmls: list[str] = []
+
+        async def on_response(resp) -> None:
+            if "eventDetailsModal" not in resp.url:
+                return
             try:
-                ct = response.headers.get("content-type", "")
-                if "html" in ct:
-                    body = await response.text()
-                    for m in re.finditer(r'/details/[^\s"\'<>]+/\d+[^\s"\'<>]*', body):
-                        detail_urls.add(urljoin(url, m.group()))
-            except Exception:
-                pass
+                body = await resp.text()
+                # Response is a JSON array: [{"action":"append","id":"event-modals","value":"<HTML>"}]
+                items = json.loads(body)
+                for item in items:
+                    if isinstance(item, dict) and "value" in item:
+                        modal_htmls.append(item["value"])
+            except Exception as e:
+                logger.debug("Modal response parse error: %s", e)
 
         page.on("response", on_response)
-
         await page.goto(url, wait_until="networkidle", timeout=60_000)
+        html = await page.content()
 
-        # Collect static detail links first
-        static_links = await page.eval_on_selector_all(
-            "a[href*='/details/']",
-            "els => els.map(e => e.href)"
-        )
-        for link in static_links:
-            if re.search(r'/details/[^/]+/[^/]+/\d+', link):
-                detail_urls.add(link)
+        # Static /details/ links (directly in page HTML)
+        for link in _detail_urls_from_html(html, url):
+            detail_urls.add(link)
 
-        # Click each event-modal trigger to load AJAX content
-        modal_triggers = await page.query_selector_all("a[data-event-modal]")
-        logger.info("Found %d event modal triggers to click", len(modal_triggers))
+        # Extract all event modal IDs
+        event_ids = re.findall(r'data-event-modal=["\']([^"\']+)["\']', html)
+        logger.info("Found %d event modal IDs", len(event_ids))
 
-        for i, trigger in enumerate(modal_triggers):
-            try:
-                await trigger.click()
-                # Wait for modal to appear and potentially load detail URL
-                await asyncio.sleep(0.5)
-                # Collect any new detail links in the modal
-                modal_links = await page.eval_on_selector_all(
-                    ".modal a[href*='/details/'], #hidden-modal a[href*='/details/'], [id*='modal'] a[href*='/details/']",
-                    "els => els.map(e => e.href)"
-                )
-                for link in modal_links:
-                    if re.search(r'/details/[^/]+/[^/]+/\d+', link):
-                        detail_urls.add(link)
-                # Close modal if open
+        # Trigger jQuery click on each event-modal element in batches.
+        # jQuery's .trigger("click") fires the bound handler which makes the AJAX call.
+        sem = asyncio.Semaphore(_AJAX_CONCURRENCY)
+
+        async def trigger_modal(event_id: str) -> None:
+            async with sem:
                 try:
-                    close_btn = await page.query_selector(".modal.in .close, .modal.show .close")
-                    if close_btn:
-                        await close_btn.click()
-                        await asyncio.sleep(0.2)
-                except Exception:
-                    # Dismiss with Escape
-                    await page.keyboard.press("Escape")
-                    await asyncio.sleep(0.2)
-            except Exception as e:
-                logger.debug("Modal click %d failed: %s", i, e)
+                    await page.evaluate(
+                        '(id) => jQuery("[data-event-modal=" + JSON.stringify(id) + "]").first().trigger("click")',
+                        event_id,
+                    )
+                    # Brief pause to allow the AJAX request to fire
+                    await asyncio.sleep(0.3)
+                except Exception as e:
+                    logger.debug("Modal trigger failed for %s: %s", event_id, e)
 
+        await asyncio.gather(*(trigger_modal(eid) for eid in event_ids))
+
+        # Wait for any in-flight responses to land
+        await asyncio.sleep(2)
         await browser.close()
+
+    # Parse detail URLs from all collected modal HTML fragments
+    for fragment in modal_htmls:
+        for link in _detail_urls_from_html(fragment, url):
+            detail_urls.add(link)
 
     logger.info("Browser discovery found %d detail URLs", len(detail_urls))
     return list(detail_urls)
