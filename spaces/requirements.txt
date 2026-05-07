@@ -1,0 +1,3 @@
+conf-scraper @ git+https://github.com/mkassaf/ConfDex.git
+gradio>=4.0
+pandas
