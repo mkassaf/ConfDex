@@ -13,7 +13,7 @@ from rich.logging import RichHandler
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 
 from confscraper.llm import DEFAULT_MODEL
-from confscraper.output import write_json, write_ndjson, write_summaries
+from confscraper.output import write_csv_papers, write_csv_summaries, write_json, write_ndjson, write_summaries
 from confscraper.pipeline import scrape, scrape_conference
 
 app = typer.Typer(
@@ -93,6 +93,10 @@ def main(
             ),
         ),
     ] = None,
+    csv: Annotated[
+        bool,
+        typer.Option("--csv", help="Output as CSV instead of JSON."),
+    ] = False,
     summarize: Annotated[
         bool,
         typer.Option(
@@ -200,11 +204,16 @@ def main(
 
             summaries = asyncio.run(_run_categorize())
 
-        write_summaries(summaries, output, compact=compact)
+        if csv:
+            write_csv_summaries(summaries, output)
+        else:
+            write_summaries(summaries, output, compact=compact)
         raise typer.Exit(code=0)
 
     # --- Normal output ---
-    if ndjson:
+    if csv:
+        write_csv_papers(result, output)
+    elif ndjson:
         write_ndjson(result.papers, output)
     else:
         write_json(result, output, compact=compact)
