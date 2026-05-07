@@ -71,6 +71,42 @@ confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track 
   | jq '.papers[] | {title, abstract}'
 ```
 
+### CSV output
+
+Add `--csv` to get a spreadsheet-friendly file instead of JSON:
+
+```bash
+# Full scrape → CSV
+confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
+            --csv -o papers.csv
+
+# Workshop / home page → CSV
+confscraper https://conf.researchr.org/home/icse-2026/greens-2026 \
+            --csv -o greens.csv
+
+# Multiple tracks merged → CSV
+confscraper URL1 URL2 --csv -o combined.csv
+```
+
+CSV columns: `title`, `abstract`, `track`, `track_label`, `session`, `room`, `scheduled_at`, `doi`, `preprint_url`, `tags`, `paper_id`, `source_url`.
+List fields (`tags`) are joined with `; `. Missing values are empty strings.
+
+### Summarize to CSV
+
+Combine `--summarize` with `--csv` to get a compact spreadsheet of titles, summaries, keywords, and scores:
+
+```bash
+# Summary + keywords only
+confscraper URL --summarize --model deepseek/deepseek-chat \
+            --csv -o summaries.csv
+
+# With relevance score
+confscraper URL --summarize --topic "Green agentic AI" \
+            --model deepseek/deepseek-chat --csv -o summaries.csv
+```
+
+CSV columns: `title`, `summary`, `keywords`, `score` (score only when `--topic` is set).
+
 ### NDJSON output (one paper per line, no wrapper)
 
 ```bash
@@ -190,6 +226,7 @@ confscraper URL --llm -o papers.json
 |---|---|---|
 | `-o / --output` | stdout | Output file path |
 | `-c / --conference` | — | Conference slug for auto-discovery (e.g. `icse-2026`) |
+| `--csv` | off | Output as CSV instead of JSON |
 | `--ndjson` | off | One JSON object per line, no wrapper object |
 | `--compact` | off | Minify JSON output |
 | `--concurrency` | 5 | Max concurrent HTTP requests |
