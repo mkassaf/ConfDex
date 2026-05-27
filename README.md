@@ -12,6 +12,8 @@ Available as a **CLI tool** or a **self-hosted web app**.
 
 - [Web App (recommended)](#web-app-recommended)
   - [Docker deployment](#docker-deployment)
+  - [Password protection](#set-an-admin-password)
+  - [HTTPS](#https-with-a-domain-name)
   - [Manual deployment](#manual-deployment)
 - [CLI installation](#cli-installation)
 - [CLI usage](#cli-usage)
@@ -72,6 +74,56 @@ docker compose pull
 docker compose up -d
 ```
 
+#### Set an admin password
+
+Add `ADMIN_PASSWORD` to your `.env` file to password-protect the entire UI:
+
+```bash
+# .env
+ADMIN_PASSWORD=your-strong-password
+```
+
+When set, the browser will ask for the password on every visit (HTTP Basic Auth). Leave it blank to run without authentication (e.g. on a local machine behind a firewall).
+
+You can also pass it inline without a `.env` file:
+
+```bash
+ADMIN_PASSWORD=your-strong-password docker compose up -d
+```
+
+#### HTTPS with a domain name
+
+**Requirements:** a domain pointing to your server, ports 80 and 443 open.
+
+Add `DOMAIN` to your `.env`:
+
+```bash
+# .env
+DOMAIN=confdex.example.com
+ADMIN_PASSWORD=your-strong-password
+```
+
+**Step 1 — issue the SSL certificate (run once):**
+
+```bash
+# Start only nginx and certbot temporarily with HTTP
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d nginx certbot
+
+# Issue the certificate
+docker compose -f docker-compose.yml -f docker-compose.https.yml run --rm certbot \
+  certonly --webroot --webroot-path /var/www/certbot \
+  --email you@example.com --agree-tos --no-eff-email \
+  -d confdex.example.com
+```
+
+**Step 2 — start everything:**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+```
+
+The app is now at **https://confdex.example.com**. Certificates auto-renew every 12 hours.
+
 #### GPU-accelerated Ollama (NVIDIA only)
 
 ```bash
@@ -84,16 +136,33 @@ Job history and results are stored in a Docker volume (`confdex_data`). Download
 
 #### Environment variables (`.env`)
 
-| Variable | Provider |
+| Variable | Description |
 |---|---|
-| `ANTHROPIC_API_KEY` | Anthropic Claude |
-| `OPENAI_API_KEY` | OpenAI |
-| `DEEPSEEK_API_KEY` | DeepSeek |
-| `GEMINI_API_KEY` | Google Gemini |
-| `GROQ_API_KEY` | Groq |
-| `MISTRAL_API_KEY` | Mistral |
+| `ADMIN_PASSWORD` | Password for the web UI (leave blank to disable auth) |
+| `DOMAIN` | Your domain name (required for HTTPS) |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API key |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `DEEPSEEK_API_KEY` | DeepSeek API key |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `GROQ_API_KEY` | Groq API key |
+| `MISTRAL_API_KEY` | Mistral API key |
 
-Keys set here are used as server-side defaults. You can also enter a key directly in the web UI per job.
+LLM keys set here are used as server-side defaults. You can also enter a key directly in the web UI per job.
+
+#### Automated deployment via GitHub Actions
+
+If you want GitHub to redeploy your server automatically on every push, add these secrets in your GitHub repo → **Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|---|---|
+| `DOCKERHUB_USERNAME` | Your Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `ADMIN_PASSWORD` | Password for the ConfDex web UI |
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USER` | SSH login username |
+| `SSH_PRIVATE_KEY` | Private key for SSH authentication |
+
+When `SSH_HOST` is set, the workflow will SSH into your server after every push and run `docker compose pull && docker compose up -d` automatically.
 
 ---
 
