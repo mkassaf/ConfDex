@@ -1,30 +1,163 @@
-# conf-scraper
+# ConfDex
 
-Scrapes paper titles and abstracts from conference websites (primarily `conf.researchr.org`) and outputs a single JSON file.
+Scrapes paper titles and abstracts from conference websites (primarily `conf.researchr.org`), summarizes them with an LLM, and scores each paper's relevance to a topic of your choice.
 
-Works with any `conf.researchr.org` URL — track pages, workshop home pages, and program pages. JavaScript-rendered pages (where papers load on click) are handled automatically using a headless browser. An optional LLM fallback extracts abstracts when CSS selectors fail, supporting Claude, OpenAI, Gemini, Ollama, and any other litellm-compatible provider.
+Works with any `conf.researchr.org` URL — track pages, workshop home pages, and program pages. JavaScript-rendered pages are handled automatically via a headless browser. Supports local models via Ollama and any remote provider (Claude, OpenAI, DeepSeek, Gemini, Groq, Mistral, …) through [litellm](https://docs.litellm.ai/docs/providers).
 
-## Installation
+Available as a **CLI tool** or a **self-hosted web app**.
+
+---
+
+## Table of Contents
+
+- [Web App (recommended)](#web-app-recommended)
+  - [Docker deployment](#docker-deployment)
+  - [Manual deployment](#manual-deployment)
+- [CLI installation](#cli-installation)
+- [CLI usage](#cli-usage)
+  - [Scraping](#scraping)
+  - [Summarize & score](#summarize--score)
+  - [LLM providers](#llm-providers)
+  - [Output formats](#output-formats)
+  - [All options](#all-options)
+- [Development](#development)
+
+---
+
+## Web App (recommended)
+
+The web app provides a browser UI to submit scraping jobs, pick an LLM (local or remote), watch real-time progress, and browse / download results.
+
+### Docker deployment
+
+**Requirements:** Docker and Docker Compose.
+
+```bash
+git clone https://github.com/mkassaf/ConfDex.git
+cd ConfDex
+
+# Copy and fill in any remote API keys you want to use
+cp .env.example .env
+# Edit .env — leave blank any keys you don't need
+
+docker compose up --build
+```
+
+Open **http://localhost:8000** in your browser.
+
+Ollama is included as a sidecar service. To install a local model, open the web UI, select **Local (Ollama)** in the LLM selector, and click **Install a model**.
+
+#### GPU-accelerated Ollama (NVIDIA)
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+```
+
+#### Persisting data
+
+Job history and results are stored in a Docker volume (`confdex_data`). Downloaded models are stored in `ollama_models`. Both survive container restarts.
+
+#### Environment variables (`.env`)
+
+| Variable | Provider |
+|---|---|
+| `ANTHROPIC_API_KEY` | Anthropic Claude |
+| `OPENAI_API_KEY` | OpenAI |
+| `DEEPSEEK_API_KEY` | DeepSeek |
+| `GEMINI_API_KEY` | Google Gemini |
+| `GROQ_API_KEY` | Groq |
+| `MISTRAL_API_KEY` | Mistral |
+
+Keys set here are used as server-side defaults. You can also enter a key directly in the web UI per job.
+
+---
+
+### Manual deployment
+
+**Requirements:** Python 3.11+, Node.js 20+.
+
+```bash
+git clone https://github.com/mkassaf/ConfDex.git
+cd ConfDex
+
+# 1. Install Python dependencies
+pip install -e .
+
+# 2. Build the React frontend
+cd frontend
+npm install
+npm run build      # outputs to src/confscraper/web/static/
+cd ..
+
+# 3. Start the server
+confscraper serve --host 0.0.0.0 --port 8000
+```
+
+Open **http://localhost:8000**.
+
+**Options for `confscraper serve`:**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--host` | `0.0.0.0` | Bind address |
+| `--port` | `8000` | Port |
+| `--db` | `confdex.db` | SQLite database path |
+| `--reload` | off | Auto-reload on code change (dev only) |
+
+To expose the server on your network, set `--host 0.0.0.0` (already the default). To restrict to localhost only, use `--host 127.0.0.1`.
+
+#### Ollama for local models (manual deployment)
+
+If you want to use local models without Docker, install Ollama separately:
+
+```bash
+# Install Ollama: https://ollama.com
+ollama serve          # starts the Ollama daemon
+ollama pull llama3.2  # install a model
+```
+
+Then select **Local (Ollama)** in the web UI. You can also install models directly from the UI.
+
+#### Running as a background service (Linux/systemd)
+
+```ini
+# /etc/systemd/system/confdex.service
+[Unit]
+Description=ConfDex web server
+After=network.target
+
+[Service]
+User=youruser
+WorkingDirectory=/path/to/ConfDex
+ExecStart=confscraper serve --host 0.0.0.0 --port 8000 --db /var/lib/confdex/jobs.db
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now confdex
+```
+
+---
+
+## CLI installation
 
 **Requires Python 3.11+**
 
 ```bash
 # From source
 git clone https://github.com/mkassaf/ConfDex.git
-cd conf-scraper
+cd ConfDex
 pip install -e .
 
 # Directly from GitHub
 pip install git+https://github.com/mkassaf/ConfDex.git
 ```
 
-After install, verify it works:
-
-```bash
-confscraper --help
-```
-
-> **macOS note:** if `confscraper` is not found, add the user bin to your PATH:
+> **macOS note:** if `confscraper` is not found after install, add the user bin to your PATH:
 > ```bash
 > export PATH="$HOME/Library/Python/3.11/bin:$PATH"
 > ```
@@ -32,244 +165,127 @@ confscraper --help
 
 ---
 
-## Usage
+## CLI usage
 
-### Scrape a single track page
-
-```bash
-confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
-            -o icse-2026-research.json
-```
-
-### Scrape multiple tracks into one file
+### Scraping
 
 ```bash
-confscraper \
-  https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
-  https://conf.researchr.org/track/icse-2026/icse-2026-seip-track \
-  -o icse-2026.json
+# Single track page
+confscraper scrape https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
+                   -o icse-2026-research.json
+
+# Multiple tracks merged into one file
+confscraper scrape URL1 URL2 -o icse-2026.json
+
+# Auto-discover all tracks for a conference
+confscraper scrape --conference icse-2026 -o icse-2026.json
+
+# Workshop / home pages (JavaScript-rendered — detected automatically)
+confscraper scrape https://conf.researchr.org/home/icse-2026/greens-2026 -o greens.json
 ```
 
-### Auto-discover all tracks for a conference
+### Summarize & score
+
+Pass `--summarize` to run each abstract through an LLM. Add `--topic` to also get a relevance score (0–10) for each paper.
 
 ```bash
-confscraper --conference icse-2026 -o icse-2026.json
+# Summarize with a local Ollama model
+confscraper scrape URL --summarize --model ollama/llama3.2 -o summaries.json
+
+# Summarize + score against a topic
+confscraper scrape URL --summarize --topic "software testing with LLMs" \
+                       --model ollama/llama3.2 -o summaries.json
+
+# Use a remote model
+confscraper scrape URL --summarize --topic "green computing" \
+                       --model deepseek/deepseek-chat \
+                       --api-key $DEEPSEEK_API_KEY -o summaries.json
 ```
 
-### Workshop / home pages (JavaScript-rendered)
+Summary output per paper:
 
-Workshop and program pages load their paper lists via JavaScript. The scraper detects these URLs automatically and launches a headless browser to click through and collect all paper links — no extra flags needed:
-
-```bash
-confscraper https://conf.researchr.org/home/icse-2026/greens-2026 -o greens-2026.json
-```
-
-### Extract abstracts only
-
-```bash
-confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
-  | jq '.papers[] | {title, abstract}'
-```
-
-### CSV output
-
-Add `--csv` to get a spreadsheet-friendly file instead of JSON:
-
-```bash
-# Full scrape → CSV
-confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
-            --csv -o papers.csv
-
-# Workshop / home page → CSV
-confscraper https://conf.researchr.org/home/icse-2026/greens-2026 \
-            --csv -o greens.csv
-
-# Multiple tracks merged → CSV
-confscraper URL1 URL2 --csv -o combined.csv
-```
-
-CSV columns: `title`, `abstract`, `track`, `track_label`, `session`, `room`, `scheduled_at`, `doi`, `preprint_url`, `tags`, `paper_id`, `source_url`.
-List fields (`tags`) are joined with `; `. Missing values are empty strings.
-
-### Summarize to CSV
-
-Combine `--summarize` with `--csv` to get a compact spreadsheet of titles, summaries, keywords, and scores:
-
-```bash
-# Summary + keywords only
-confscraper URL --summarize --model deepseek/deepseek-chat \
-            --csv -o summaries.csv
-
-# With relevance score
-confscraper URL --summarize --topic "Green agentic AI" \
-            --model deepseek/deepseek-chat --csv -o summaries.csv
-```
-
-CSV columns: `title`, `summary`, `keywords`, `score` (score only when `--topic` is set).
-
-### NDJSON output (one paper per line, no wrapper)
-
-```bash
-confscraper https://conf.researchr.org/track/icse-2026/icse-2026-research-track \
-            --ndjson -o papers.ndjson
-```
-
----
-
-## Summarize & categorize
-
-Pass `--summarize` to run each paper's abstract through an LLM and get a compact output:
-`title`, `summary`, `keywords`, and optionally a `score`.
-
-### Summarize only (summary + keywords)
-
-```bash
-confscraper URL --summarize --model ollama/llama3.2 -o summaries.json
-```
-
-Output per paper:
 ```json
-[
-  {
-    "title": "Find My Code Twin: ...",
-    "summary": "The paper presents SNIPPET SEARCH, a code retrieval tool ...",
-    "keywords": ["code search", "semantic clustering", "snippet retrieval", "embeddings", "software engineering"]
-  }
-]
+{
+  "title": "Find My Code Twin: ...",
+  "source_url": "https://conf.researchr.org/details/...",
+  "doi": "10.1145/...",
+  "summary": "This paper addresses the problem of code retrieval at scale. It proposes SNIPPET SEARCH, a semantic clustering approach...",
+  "keywords": ["code search", "semantic clustering", "embeddings", "software engineering", "retrieval"],
+  "methodology": "tool or framework",
+  "domain": "software engineering tools",
+  "score": 4,
+  "score_reasoning": "The paper focuses on code retrieval rather than software testing, but its semantic search techniques are applicable.",
+  "score_matching": ["semantic search applicable to test case retrieval"]
+}
 ```
 
-### Summarize + relevance score for a topic
+### LLM providers
 
-Add `--topic` to score each paper 0–10 against a research topic:
+API keys are resolved automatically — no need to pass `--api-key` if the env var is set:
+
+| Provider | Model string | Key env var |
+|---|---|---|
+| Anthropic Claude (default) | `claude-sonnet-4-6` | `ANTHROPIC_API_KEY` |
+| OpenAI | `gpt-4o`, `gpt-4o-mini` | `OPENAI_API_KEY` |
+| DeepSeek | `deepseek/deepseek-chat` | `DEEPSEEK_API_KEY` |
+| Google Gemini | `gemini/gemini-1.5-pro` | `GEMINI_API_KEY` |
+| Groq | `groq/llama-3.3-70b-versatile` | `GROQ_API_KEY` |
+| Mistral | `mistral/mistral-large-latest` | `MISTRAL_API_KEY` |
+| Ollama (local) | `ollama/llama3.2` | *(none needed)* |
+
+Any other [litellm-compatible](https://docs.litellm.ai/docs/providers) provider also works.
 
 ```bash
-confscraper URL --summarize --topic "Green agentic AI" \
-               --model ollama/llama3.2 -o summaries.json
-```
-
-Output per paper:
-```json
-[
-  {
-    "title": "Find My Code Twin: ...",
-    "summary": "The paper presents SNIPPET SEARCH ...",
-    "keywords": ["code search", "semantic clustering", "snippet retrieval", "embeddings", "SE"],
-    "score": 3
-  }
-]
-```
-
-`score` is `0` (completely unrelated) to `10` (directly addresses the topic). Papers with no abstract get `null` for `summary` and `score`.
-
-> `--summarize` uses the same `--model` and `--api-key` flags as `--llm`. See the LLM section below for provider setup.
-
----
-
-## LLM-assisted extraction
-
-Pass `--llm` to enable an LLM fallback for pages where the abstract cannot be found by CSS selectors. Supports any [litellm-compatible](https://docs.litellm.ai/docs/providers) provider.
-
-### API key resolution (automatic)
-
-You do not need to pass a key explicitly. The scraper checks in this order:
-
-1. `--api-key` CLI flag
-2. Provider env var auto-detected from the model name (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, …)
-3. `LITELLM_API_KEY` generic fallback
-4. No key — for local models like Ollama
-
-### Claude (default)
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-confscraper URL --llm -o papers.json
-```
-
-```bash
-# Or pass the key inline
-confscraper URL --llm --api-key sk-ant-... -o papers.json
-```
-
-### OpenAI
-
-```bash
-export OPENAI_API_KEY=sk-...
-confscraper URL --llm --model gpt-4o -o papers.json
-```
-
-### Gemini
-
-```bash
-export GEMINI_API_KEY=...
-confscraper URL --llm --model gemini/gemini-1.5-pro -o papers.json
-```
-
-### Ollama (local, no key needed)
-
-```bash
-# Make sure Ollama is running: ollama serve
-confscraper URL --llm --model ollama/llama3.2 -o papers.json
-```
-
-### Set the model globally via env var
-
-```bash
+# Set model globally via env var
 export LLM_MODEL=ollama/llama3.2
-confscraper URL --llm -o papers.json
+confscraper scrape URL --summarize -o summaries.json
 ```
 
----
+### Output formats
 
-## All options
+```bash
+# JSON (default)
+confscraper scrape URL -o papers.json
+
+# CSV (scrape)
+confscraper scrape URL --csv -o papers.csv
+
+# CSV (summarize)
+confscraper scrape URL --summarize --csv -o summaries.csv
+
+# NDJSON (one object per line)
+confscraper scrape URL --ndjson -o papers.ndjson
+
+# Compact JSON (no indentation)
+confscraper scrape URL --compact -o papers.json
+```
+
+**Scrape CSV columns:** `title`, `abstract`, `track`, `track_label`, `session`, `room`, `scheduled_at`, `doi`, `preprint_url`, `tags`, `paper_id`, `source_url`
+
+**Summary CSV columns:** `title`, `source_url`, `doi`, `summary`, `keywords`, `methodology`, `domain`, `score`, `score_reasoning`, `score_matching`
+
+### All options
+
+```
+confscraper scrape [OPTIONS] [TRACK_URLS]...
+```
 
 | Flag | Default | Description |
 |---|---|---|
-| `-o / --output` | stdout | Output file path |
 | `-c / --conference` | — | Conference slug for auto-discovery (e.g. `icse-2026`) |
+| `-o / --output` | stdout | Output file path |
+| `--summarize` | off | Summarize abstracts + extract keywords via LLM |
+| `--topic TEXT` | — | Score relevance against this topic (0–10); requires `--summarize` |
+| `--model` | `claude-sonnet-4-6` | LLM model string (env: `LLM_MODEL`) |
+| `--api-key` | — | LLM API key (falls back to provider env vars) |
+| `--llm` | off | Enable LLM fallback for abstract extraction when CSS selectors fail |
 | `--csv` | off | Output as CSV instead of JSON |
-| `--ndjson` | off | One JSON object per line, no wrapper object |
+| `--ndjson` | off | One JSON object per line, no wrapper |
 | `--compact` | off | Minify JSON output |
 | `--concurrency` | 5 | Max concurrent HTTP requests |
 | `--rate` | 5.0 | Max requests per second |
 | `--timeout` | 30.0 | HTTP timeout in seconds |
-| `--llm` | off | Enable LLM fallback for abstract extraction |
-| `--summarize` | off | Summarize abstracts + extract keywords (replaces full JSON output) |
-| `--topic TEXT` | — | Score each paper's relevance to this topic (0–10); requires `--summarize` |
-| `--model` | `claude-sonnet-4-6` | LLM model for `--llm` and `--summarize` (env: `LLM_MODEL`) |
-| `--api-key` | — | LLM API key — falls back to provider env vars automatically |
 | `-v / --verbose` | off | Debug logging |
-
----
-
-## Output format
-
-```json
-{
-  "schema_version": "1.0",
-  "conference": "icse-2026",
-  "source_urls": ["https://conf.researchr.org/track/..."],
-  "scraped_at": "2026-05-06T14:32:11Z",
-  "paper_count": 142,
-  "papers": [
-    {
-      "source_url": "https://conf.researchr.org/details/...",
-      "paper_id": "28",
-      "track": "icse-2026-research-track",
-      "track_label": "Research Track",
-      "title": "Find My Code Twin: Improving Snippet Search ...",
-      "abstract": "We present SNIPPET SEARCH, a high-performance code search tool ...",
-      "doi": "https://doi.org/10.1145/...",
-      "preprint_url": null,
-      "session": "AI for Software Engineering 1",
-      "room": "Asia I",
-      "scheduled_at": null,
-      "tags": ["Distinguished Paper Award"]
-    }
-  ]
-}
-```
-
-Missing fields are `null`, never omitted. When scraping multiple tracks, all papers share the flat `papers` array and the `track` field disambiguates them.
 
 ---
 
@@ -278,4 +294,12 @@ Missing fields are `null`, never omitted. When scraping multiple tracks, all pap
 ```bash
 pip install -e ".[dev]"
 pytest
+
+# Run the web server in dev mode (auto-reload)
+confscraper serve --reload
+
+# Develop the frontend with hot reload
+cd frontend
+npm install
+npm run dev   # starts Vite dev server on :5173, proxies /api to :8000
 ```

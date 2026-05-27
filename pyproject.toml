@@ -19,10 +19,16 @@ dependencies = [
     "rich>=13.0",
     "playwright>=1.40",
     "litellm>=1.40",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "aiosqlite>=0.20",
+    "python-multipart>=0.0.9",
+    "sse-starlette>=2.1",
 ]
 
 [project.scripts]
 confscraper = "confscraper.cli:app"
+confscraper-web = "confscraper.web.serve:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
