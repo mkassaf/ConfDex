@@ -29,11 +29,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pyproject.toml ./
 COPY src/ src/
 
+# Copy built frontend into the package source BEFORE pip install
+# so the static files are baked into site-packages by the installer
+COPY --from=frontend /frontend/dist/ src/confscraper/web/static/
+
 RUN pip install --no-cache-dir .
 RUN python -m playwright install chromium
-
-# Copy built frontend into static directory
-COPY --from=frontend /frontend/dist/ src/confscraper/web/static/
 
 EXPOSE 8000
 
