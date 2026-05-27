@@ -30,65 +30,52 @@ The web app provides a browser UI to submit scraping jobs, pick an LLM (local or
 
 ### Docker deployment
 
-**Requirements:** Docker and Docker Compose. Nothing else — no Python, Node, or git needed.
+**Requirements:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Mac/Windows) or [Docker Engine + Compose](https://docs.docker.com/engine/install/) (Linux). Nothing else — no Python, Node, or git needed.
+
+#### 1. Download the compose file
 
 ```bash
-# 1. Download the compose file and env template
 curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.yml
+```
+
+#### 2. (Optional) set API keys for remote LLMs
+
+```bash
 curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/.env.example
 cp .env.example .env
+# Open .env and fill in whichever keys you need
+```
 
-# 2. (Optional) edit .env to add remote API keys
-#    Leave blank if you only plan to use local Ollama models
+Skip this step if you only plan to use local Ollama models — you can also enter API keys directly in the web UI per job.
 
-# 3. Start
+#### 3. Start
+
+```bash
 docker compose up -d
 ```
 
-Docker Compose pulls the pre-built image `mkassaf/confdex:latest` from Docker Hub automatically. Open **http://localhost:8000**.
+Docker Compose pulls the pre-built image from Docker Hub automatically. Open **http://localhost:8000**.
 
-To pass API keys without a `.env` file:
+Ollama is included — no separate install needed. To add a local model, open the web UI, select **Local (Ollama)** in the LLM selector, and click **Install a model**.
 
-```bash
-ANTHROPIC_API_KEY=sk-ant-... docker compose up -d
-```
-
-To build the image yourself from source instead:
+#### Stop / restart
 
 ```bash
-git clone https://github.com/mkassaf/ConfDex.git
-cd ConfDex
-cp .env.example .env
-docker compose up --build -d
+docker compose down       # stop (data is preserved in volumes)
+docker compose up -d      # start again
 ```
 
-#### Platform support
-
-| Platform | Works? |
-|---|---|
-| Linux server / VPS (x86-64) | ✅ Recommended for always-on hosting |
-| macOS with Intel | ✅ |
-| Windows (Docker Desktop) | ✅ |
-| macOS Apple Silicon (M1/M2/M3) | ✅ via Docker's automatic emulation |
-| Raspberry Pi 4/5 (arm64) | ✅ via Docker's automatic emulation |
-
-> **Note:** the published image is currently `amd64` only. Docker Desktop handles emulation transparently on ARM machines, but native ARM performance requires a multi-platform build.
-
-#### Updating to the latest version
+#### Update to the latest version
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-Open **http://localhost:8000** in your browser.
-
-Ollama is included as a sidecar service. To install a local model, open the web UI, select **Local (Ollama)** in the LLM selector, and click **Install a model**.
-
-#### GPU-accelerated Ollama (NVIDIA)
+#### GPU-accelerated Ollama (NVIDIA only)
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
 ```
 
 #### Persisting data
