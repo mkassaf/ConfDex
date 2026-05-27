@@ -1,7 +1,5 @@
 # GPU override — layer on top of docker-compose.yml:
 #   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up
-version: "3.9"
-
 services:
   ollama:
     deploy:
