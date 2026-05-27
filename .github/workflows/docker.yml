@@ -5,6 +5,9 @@ on:
     branches: [main]
     tags: ["v*"]          # also publish on version tags, e.g. v1.0.0
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   push:
     runs-on: ubuntu-latest
