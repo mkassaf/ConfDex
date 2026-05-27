@@ -30,19 +30,28 @@ The web app provides a browser UI to submit scraping jobs, pick an LLM (local or
 
 ### Docker deployment
 
-**Requirements:** Docker and Docker Compose.
+**Requirements:** Docker and Docker Compose. Nothing else — no Python, Node, or git needed.
 
 ```bash
-# Download only the compose file and env template (no git clone needed)
+# 1. Download the compose file and env template
 curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.yml
 curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/.env.example
 cp .env.example .env
-# Edit .env — fill in any remote API keys you want to use
 
+# 2. (Optional) edit .env to add remote API keys
+#    Leave blank if you only plan to use local Ollama models
+
+# 3. Start
 docker compose up -d
 ```
 
-Docker Compose pulls the pre-built image `mkassaf/confdex:latest` from Docker Hub automatically — no build step needed.
+Docker Compose pulls the pre-built image `mkassaf/confdex:latest` from Docker Hub automatically. Open **http://localhost:8000**.
+
+To pass API keys without a `.env` file:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-... docker compose up -d
+```
 
 To build the image yourself from source instead:
 
@@ -51,6 +60,25 @@ git clone https://github.com/mkassaf/ConfDex.git
 cd ConfDex
 cp .env.example .env
 docker compose up --build -d
+```
+
+#### Platform support
+
+| Platform | Works? |
+|---|---|
+| Linux server / VPS (x86-64) | ✅ Recommended for always-on hosting |
+| macOS with Intel | ✅ |
+| Windows (Docker Desktop) | ✅ |
+| macOS Apple Silicon (M1/M2/M3) | ✅ via Docker's automatic emulation |
+| Raspberry Pi 4/5 (arm64) | ✅ via Docker's automatic emulation |
+
+> **Note:** the published image is currently `amd64` only. Docker Desktop handles emulation transparently on ARM machines, but native ARM performance requires a multi-platform build.
+
+#### Updating to the latest version
+
+```bash
+docker compose pull
+docker compose up -d
 ```
 
 Open **http://localhost:8000** in your browser.
