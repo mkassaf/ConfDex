@@ -9,6 +9,13 @@ RUN VITE_OUT_DIR=dist npm run build
 # ── Stage 2: Python backend ───────────────────────────────────────────────────
 FROM python:3.12-slim
 
+LABEL org.opencontainers.image.title="ConfDex" \
+      org.opencontainers.image.description="Scrape, summarize, and find relevant papers from academic conferences. Self-hosted web app with local (Ollama) and remote LLM support." \
+      org.opencontainers.image.url="https://github.com/mkassaf/ConfDex" \
+      org.opencontainers.image.source="https://github.com/mkassaf/ConfDex" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="Mustafa Assaf"
+
 WORKDIR /app
 
 # System deps for Playwright

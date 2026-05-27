@@ -33,14 +33,24 @@ The web app provides a browser UI to submit scraping jobs, pick an LLM (local or
 **Requirements:** Docker and Docker Compose.
 
 ```bash
+# Download only the compose file and env template (no git clone needed)
+curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/.env.example
+cp .env.example .env
+# Edit .env — fill in any remote API keys you want to use
+
+docker compose up -d
+```
+
+Docker Compose pulls the pre-built image `mkassaf/confdex:latest` from Docker Hub automatically — no build step needed.
+
+To build the image yourself from source instead:
+
+```bash
 git clone https://github.com/mkassaf/ConfDex.git
 cd ConfDex
-
-# Copy and fill in any remote API keys you want to use
 cp .env.example .env
-# Edit .env — leave blank any keys you don't need
-
-docker compose up --build
+docker compose up --build -d
 ```
 
 Open **http://localhost:8000** in your browser.

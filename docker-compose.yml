@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   confdex:
-    build: .
+    image: mkassaf/confdex:latest
+    build: .            # used only when running `docker compose up --build` locally
     ports:
       - "8000:8000"
     volumes:

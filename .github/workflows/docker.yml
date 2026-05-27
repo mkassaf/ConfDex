@@ -30,6 +30,10 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=ConfDex
+            org.opencontainers.image.description=Scrape, summarize, and find relevant papers from academic conferences. Self-hosted web app with local (Ollama) and remote LLM support.
+            org.opencontainers.image.vendor=Mustafa Assaf
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -38,3 +42,12 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/confdex
+          short-description: "Scrape, summarize, and score academic conference papers using local or remote LLMs."
+          readme-filepath: ./README.md
