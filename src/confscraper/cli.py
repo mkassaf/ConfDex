@@ -33,8 +33,8 @@ def _setup_logging(verbose: bool) -> None:
     )
 
 
-@app.command()
-def main(
+@app.command("scrape")
+def scrape_cmd(
     track_urls: Annotated[
         Optional[list[str]],
         typer.Argument(help="One or more URLs to scrape (track, home, or program pages)."),
@@ -120,6 +120,7 @@ def main(
         typer.Option("--verbose", "-v", help="Enable debug logging."),
     ] = False,
 ) -> None:
+    """Scrape papers from a conference track or auto-discover all tracks."""
     _setup_logging(verbose)
 
     if not track_urls and not conference:
@@ -136,7 +137,6 @@ def main(
     if summarize:
         label = f"Summarize + score (topic: [bold]{topic}[/bold])" if topic else "Summarize + keywords"
         console.print(f"{label} — model: [cyan]{resolved_model}[/cyan]")
-        # Validate model up-front so a bad model name / missing key fails fast
         from confscraper.categorize import validate_model
         try:
             validate_model(resolved_model, api_key)
@@ -178,7 +178,7 @@ def main(
 
     # --- Categorize (optional) ---
     if summarize:
-        from confscraper.categorize import categorize_papers
+        from confscraper.categorize import categorize_paper_v2
 
         with Progress(
             SpinnerColumn(),
@@ -189,14 +189,12 @@ def main(
             task = progress.add_task("Categorizing papers…", total=result.paper_count)
 
             async def _run_categorize():
-                from confscraper.categorize import categorize_papers as _cat
                 sem = asyncio.Semaphore(concurrency)
                 results = []
                 for paper in result.papers:
                     async with sem:
-                        from confscraper.categorize import categorize_paper
                         r = await asyncio.to_thread(
-                            categorize_paper, paper, resolved_model, api_key, topic
+                            categorize_paper_v2, paper, resolved_model, api_key, topic
                         )
                         results.append(r)
                         progress.advance(task)
@@ -220,3 +218,33 @@ def main(
 
     if result.paper_count == 0:
         raise typer.Exit(code=1)
+
+
+@app.command("serve")
+def serve_cmd(
+    host: Annotated[
+        str,
+        typer.Option("--host", help="Host to bind to."),
+    ] = "0.0.0.0",
+    port: Annotated[
+        int,
+        typer.Option("--port", help="Port to listen on."),
+    ] = 8000,
+    db: Annotated[
+        Path,
+        typer.Option("--db", help="Path to SQLite database file."),
+    ] = Path("confdex.db"),
+    reload: Annotated[
+        bool,
+        typer.Option("--reload", help="Enable auto-reload for development."),
+    ] = False,
+) -> None:
+    """Start the ConfDex web server."""
+    import uvicorn
+    from confscraper.web.app import create_app
+
+    console.print(f"Starting ConfDex web server on [cyan]http://{host}:{port}[/cyan]")
+    console.print(f"Database: [cyan]{db}[/cyan]")
+
+    web_app = create_app(db_path=db)
+    uvicorn.run(web_app, host=host, port=port, reload=reload)
