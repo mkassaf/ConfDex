@@ -79,5 +79,7 @@ jobs:
           key:      ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/confdex
-            docker compose pull
-            ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" docker compose up -d
+            docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml pull
+            ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
+            HOST_IP="${{ vars.SSH_HOST }}" \
+            docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d

@@ -15,7 +15,7 @@ Available as a **CLI tool** or a **self-hosted web app**.
   - [Password protection](#set-an-admin-password)
   - [HTTPS (self-signed / IP)](#https-with-a-self-signed-certificate-ip-address-no-domain)
   - [HTTPS (domain)](#https-with-a-domain-name)
-  - [Deploy to a remote server](#deploy-to-a-remote-linux-server)
+  - [Deploy to AWS EC2](#deploy-to-aws-ec2-with-auto-deploy-via-github-actions)
   - [Manual deployment](#manual-deployment)
 - [CLI installation](#cli-installation)
 - [CLI usage](#cli-usage)
@@ -200,78 +200,78 @@ When `SSH_HOST` variable is set, the workflow SSHes into your server after every
 
 ---
 
-### Deploy to a remote Linux server
+### Deploy to AWS EC2 with auto-deploy via GitHub Actions
 
-These steps show how to get ConfDex running on any Linux server (Ubuntu, Debian, etc.) with HTTPS and a password, accessible from the internet.
+This sets up ConfDex on an AWS EC2 instance and configures GitHub to redeploy it automatically on every push to `main`.
 
-#### 1. Install Docker on the server
+#### Step 1 — Launch an EC2 instance
+
+1. Go to **EC2 → Launch Instance** in the AWS Console.
+2. Choose **Ubuntu 24.04 LTS** (or Amazon Linux 2023).
+3. Instance type: **t3.medium** (2 vCPU / 4 GB RAM) — minimum for running Ollama models. Use `t3.small` if you only need remote LLMs.
+4. **Key pair:** create a new key pair (RSA, `.pem` format). Download and save it — you'll need the private key for GitHub.
+5. **Security group:** allow inbound traffic on:
+   - **SSH** port 22 (your IP only, or anywhere for convenience)
+   - **HTTP** port 80 (anywhere)
+   - **HTTPS** port 443 (anywhere)
+6. Storage: **20 GB** minimum (Ollama models can be large).
+7. Launch the instance and note the **Public IPv4 address**.
+8. (Recommended) Allocate an **Elastic IP** and associate it with the instance so the IP doesn't change on restart: **EC2 → Elastic IPs → Allocate → Associate**.
+
+#### Step 2 — Bootstrap the server (run once)
+
+From your local machine, run the bootstrap script. It installs Docker, downloads the compose files, and starts the app:
 
 ```bash
-# Connect to your server
-ssh user@your-server-ip
+# Clone the repo locally if you haven't already
+git clone https://github.com/mkassaf/ConfDex.git
+cd ConfDex
 
-# Install Docker Engine + Compose (Ubuntu/Debian)
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER   # allow running docker without sudo
-newgrp docker                   # apply group change without logout
+bash scripts/setup-server.sh <your-ec2-ip> <your-admin-password>
+# Example:
+bash scripts/setup-server.sh 203.0.113.10 MyPassword123
 ```
 
-#### 2. Download the compose files
+> If you're using Amazon Linux instead of Ubuntu, edit the script and change `SSH_USER="ubuntu"` to `SSH_USER="ec2-user"`.
+
+After the script finishes, open **https://your-ec2-ip** in your browser. Accept the self-signed certificate warning, then log in with:
+- **Username:** *(leave blank)*
+- **Password:** your admin password
+
+#### Step 3 — Configure GitHub Actions for auto-deploy
+
+Every push to `main` will build a new Docker image and deploy it to your server automatically.
+
+Go to your GitHub repo → **Settings → Secrets and variables → Actions**.
+
+Add the following **Secrets** (sensitive — hidden after saving):
+
+| Secret | Value |
+|---|---|
+| `DOCKERHUB_TOKEN` | Docker Hub access token ([create one here](https://hub.docker.com/settings/security)) |
+| `DOCKERHUB_USERNAME` | Your Docker Hub username |
+| `ADMIN_PASSWORD` | Your ConfDex admin password |
+| `SSH_PRIVATE_KEY` | Contents of the `.pem` key file you downloaded in Step 1 |
+
+Add the following **Variables** (non-sensitive — visible in logs):
+
+| Variable | Value |
+|---|---|
+| `SSH_HOST` | Your EC2 public IP (e.g. `203.0.113.10`) |
+| `SSH_USER` | `ubuntu` (or `ec2-user` for Amazon Linux) |
+
+Once configured, push any change to `main` — GitHub Actions will:
+1. Build and push the Docker image to Docker Hub
+2. SSH into your EC2 instance and run `docker compose pull && docker compose up -d`
+
+#### Step 4 — Update manually (without GitHub Actions)
 
 ```bash
-mkdir ~/confdex && cd ~/confdex
-
-curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.yml
-curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.selfsigned.yml
-curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/nginx/selfsigned.conf
-mkdir -p nginx && mv selfsigned.conf nginx/
-```
-
-#### 3. Create your `.env` file
-
-```bash
-cat > .env <<EOF
-HOST_IP=your-server-ip        # e.g. 203.0.113.10
-ADMIN_PASSWORD=your-strong-password
-ANTHROPIC_API_KEY=            # optional — fill in if you use Claude
-OPENAI_API_KEY=               # optional
-EOF
-```
-
-> **Login:** when the browser asks for credentials, leave the username blank and enter your `ADMIN_PASSWORD`.
-
-#### 4. Open firewall ports
-
-```bash
-# Ubuntu ufw
-sudo ufw allow 80
-sudo ufw allow 443
-sudo ufw reload
-```
-
-On cloud providers (AWS, GCP, Azure, DigitalOcean) also open ports 80 and 443 in your instance's security group / firewall rules.
-
-#### 5. Start
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d
-```
-
-Docker pulls the image automatically. The app is now at **https://your-server-ip**.
-
-On the first start, a self-signed certificate is generated. Your browser will show a security warning — click **Advanced → Proceed** (Chrome) or **Accept the Risk** (Firefox).
-
-#### 6. Update to the latest version
-
-```bash
+ssh ubuntu@your-ec2-ip
 cd ~/confdex
 docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml pull
 docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d
 ```
-
-#### 7. (Optional) Auto-deploy on every push via GitHub Actions
-
-If you push to your own fork and want the server to update automatically on every push, see [Automated deployment via GitHub Actions](#automated-deployment-via-github-actions).
 
 ---
 
