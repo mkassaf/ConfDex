@@ -25,12 +25,16 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
         if not password:
             return await call_next(request)
 
+        username = os.environ.get("ADMIN_USERNAME", "admin").strip()
+
         auth = request.headers.get("Authorization", "")
         if auth.startswith("Basic "):
             try:
                 decoded = base64.b64decode(auth[6:]).decode("utf-8")
-                _, provided = decoded.split(":", 1)
-                if secrets.compare_digest(provided.encode(), password.encode()):
+                provided_user, provided_pass = decoded.split(":", 1)
+                user_ok = secrets.compare_digest(provided_user.encode(), username.encode())
+                pass_ok = secrets.compare_digest(provided_pass.encode(), password.encode())
+                if user_ok and pass_ok:
                     return await call_next(request)
             except Exception:
                 pass

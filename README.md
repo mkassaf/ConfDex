@@ -164,6 +164,7 @@ Job history and results are stored in a Docker volume (`confdex_data`). Download
 
 | Variable | Description |
 |---|---|
+| `ADMIN_USERNAME` | Username for the web UI (default: `admin`) |
 | `ADMIN_PASSWORD` | Password for the web UI (leave blank to disable auth) |
 | `DOMAIN` | Your domain name (required for domain-based HTTPS) |
 | `HOST_IP` | Your server's IP address (required for self-signed HTTPS) |
