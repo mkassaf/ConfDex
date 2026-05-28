@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #ab8927; }
+      .shield-dark { fill: #6e5513; }
+      .shield-light { fill: #ffd966; }
+      .stroke-dark { stroke: #6e5513; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .stroke-thick { stroke: #6e5513; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .fill-light { fill: #ffd966; }
+      .fill-medium { fill: #e0be4f; }
+      .fill-dark { fill: #6e5513; }
+      .lens-glass { fill: #ffd966; fill-opacity: 0.3; }
+      .highlight { fill: #ffffff; fill-opacity: 0.6; }
+    </style>
+  </defs>
+
+  <rect width="100%" height="100%" class="bg" />
+
+  <g id="shield">
+    <path d="M 50 80 
+             L 250 40 
+             L 450 80 
+             C 450 250, 400 380, 250 460 
+             C 100 380, 50 250, 50 80 Z" 
+          class="shield-dark" />
+    
+    <path d="M 68 93 
+             L 250 56 
+             L 432 93 
+             C 432 240, 387 360, 250 435 
+             C 113 360, 68 240, 68 93 Z" 
+          class="shield-light" />
+  </g>
+
+  <g id="globe" class="stroke-dark">
+    <circle cx="250" cy="180" r="75" class="fill-medium" style="stroke-width: 10;" />
+    <path d="M 178 160 Q 250 190 322 160" />
+    <path d="M 183 200 Q 250 235 317 200" />
+    <path d="M 210 112 Q 240 180 210 248" />
+    <path d="M 290 112 Q 260 180 290 248" />
+    <path d="M 250 105 L 250 255" />
+    <circle cx="210" cy="180" r="7" class="fill-dark" stroke="none" />
+    <circle cx="250" cy="203" r="7" class="fill-dark" stroke="none" />
+    <circle cx="290" cy="180" r="7" class="fill-dark" stroke="none" />
+  </g>
+
+  <g id="constellation" class="stroke-dark" style="stroke-width: 7;">
+    <line x1="330" y1="90" x2="410" y2="40" />
+    <line x1="410" y1="40" x2="470" y2="100" />
+    <line x1="470" y1="100" x2="430" y2="190" />
+    <line x1="430" y1="190" x2="350" y2="140" />
+    <line x1="350" y1="140" x2="330" y2="90" />
+    
+    <line x1="410" y1="40" x2="350" y2="140" />
+    <line x1="410" y1="40" x2="430" y2="190" />
+    <line x1="330" y1="90" x2="470" y2="100" />
+    <line x1="350" y1="140" x2="470" y2="100" />
+
+    <circle cx="330" cy="90" r="10" class="fill-light" />
+    <circle cx="410" cy="40" r="12" class="fill-light" />
+    <circle cx="470" cy="100" r="10" class="fill-light" />
+    <circle cx="430" cy="190" r="13" class="fill-light" />
+    <circle cx="350" cy="140" r="9" class="fill-light" />
+    <circle cx="400" cy="115" r="8" class="fill-light" />
+  </g>
+
+  <g id="book">
+    <path d="M 60 295 
+             C 60 295, 140 285, 235 315 
+             L 250 310 
+             L 250 150
+             C 150 130, 75 140, 75 140 
+             Z" class="fill-dark" />
+    <path d="M 440 295 
+             C 440 295, 360 285, 265 315 
+             L 250 310 
+             L 250 150
+             C 350 130, 425 140, 425 140 
+             Z" class="fill-dark" />
+
+    <path d="M 75 145 
+             C 75 145, 160 130, 245 160 
+             L 245 320 
+             C 160 290, 75 305, 75 305 
+             Z" class="fill-light stroke-thick" />
+    
+    <path d="M 80 153 C 80 153, 160 138, 245 168 L 245 328 C 160 298, 80 313, 80 313 Z" class="fill-light stroke-dark" />
+    <path d="M 85 161 C 85 161, 160 146, 245 176 L 245 336 C 160 306, 85 321, 85 321 Z" class="fill-light stroke-dark" />
+
+    <path d="M 425 145 
+             C 425 145, 340 130, 255 160 
+             L 255 320 
+             C 340 290, 425 305, 425 305 
+             Z" class="fill-light stroke-thick" />
+    
+    <path d="M 420 153 C 420 153, 340 138, 255 168 L 255 328 C 340 298, 420 313, 420 313 Z" class="fill-light stroke-dark" />
+    <path d="M 415 161 C 415 161, 340 146, 255 176 L 255 336 C 340 306, 415 321, 415 321 Z" class="fill-light stroke-dark" />
+
+    <path d="M 120 140 L 120 220 L 140 200 L 160 220 L 160 134" class="fill-dark stroke-dark" style="stroke-width: 5;" />
+
+    <g class="stroke-dark" style="stroke-width: 6;">
+      <line x1="110" y1="240" x2="215" y2="220" />
+      <line x1="110" y1="260" x2="215" y2="240" />
+      <line x1="110" y1="280" x2="215" y2="260" />
+      <line x1="110" y1="300" x2="180" y2="285" />
+    </g>
+
+    <g class="stroke-dark" style="stroke-width: 6;">
+      <line x1="285" y1="220" x2="390" y2="240" />
+      <line x1="285" y1="240" x2="390" y2="260" />
+      <line x1="285" y1="260" x2="390" y2="280" />
+      <line x1="285" y1="280" x2="350" y2="295" />
+    </g>
+  </g>
+
+  <g id="magnifying-glass">
+    <path d="M 370 290 L 455 375 C 470 390, 490 370, 475 355 L 390 270 Z" class="fill-dark" />
+    <rect x="400" y="300" width="35" height="110" rx="17.5" transform="rotate(-45 400 300)" class="fill-dark stroke-dark" style="stroke-width: 8;" />
+    
+    <circle cx="310" cy="210" r="85" class="fill-medium stroke-thick" />
+    
+    <circle cx="310" cy="210" r="72" class="stroke-dark" style="stroke-width: 10; fill: none;" />
+    
+    <circle cx="310" cy="210" r="67" class="lens-glass" />
+
+    <path d="M 255 175 C 275 155, 315 150, 345 165" class="stroke-dark" style="stroke-width: 8; fill: none; stroke-linecap: round;" />
+    <path d="M 258 178 C 275 161, 312 156, 340 170" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8" />
+    
+    <path d="M 350 245 C 360 235, 365 220, 362 205" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5" />
+    
+    <g transform="rotate(-30 310 210)">
+      <rect x="245" y="195" width="12" height="35" rx="6" class="highlight" />
+      <rect x="247" y="240" width="12" height="12" rx="6" class="highlight" />
+    </g>
+  </g>
+</svg>
