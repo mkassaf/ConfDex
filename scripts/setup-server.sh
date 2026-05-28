@@ -7,13 +7,20 @@
 
 set -euo pipefail
 
-SERVER_IP="${1:?Usage: $0 <server-ip> <admin-password>}"
-ADMIN_PASSWORD="${2:?Usage: $0 <server-ip> <admin-password>}"
+SERVER_IP="${1:?Usage: $0 <server-ip> <admin-password> [path-to-key.pem]}"
+ADMIN_PASSWORD="${2:?Usage: $0 <server-ip> <admin-password> [path-to-key.pem]}"
+PEM_KEY="${3:-}"
 SSH_USER="ubuntu"   # change to "ec2-user" if using Amazon Linux
+
+SSH_OPTS="-o StrictHostKeyChecking=no"
+if [ -n "$PEM_KEY" ]; then
+  chmod 400 "$PEM_KEY"
+  SSH_OPTS="$SSH_OPTS -i $PEM_KEY"
+fi
 
 echo "==> Bootstrapping ConfDex on $SERVER_IP"
 
-ssh -o StrictHostKeyChecking=no "$SSH_USER@$SERVER_IP" bash <<REMOTE
+ssh $SSH_OPTS "$SSH_USER@$SERVER_IP" bash <<REMOTE
 set -euo pipefail
 
 echo "--- Installing Docker ---"
