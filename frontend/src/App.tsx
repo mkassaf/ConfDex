@@ -30,6 +30,9 @@ export default function App() {
             onSelect={(id) => { setSelectedJobId(id); setShowForm(false); }}
           />
         </div>
+        <div className="p-4 border-t border-gray-800">
+          <p className="text-xs text-gray-600 text-center">Design by Mustafa Assaf</p>
+        </div>
       </aside>
 
       {/* Main panel */}
