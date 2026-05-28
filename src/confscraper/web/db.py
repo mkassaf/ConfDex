@@ -129,3 +129,35 @@ async def delete_job(job_id: str) -> bool:
         cur = await conn.execute("DELETE FROM jobs WHERE id=?", (job_id,))
         await conn.commit()
         return cur.rowcount > 0
+
+
+async def list_incomplete_jobs() -> list[dict]:
+    """Return jobs still in progress (pending / scraping / summarizing)."""
+    async with aiosqlite.connect(_DB_PATH) as conn:
+        conn.row_factory = aiosqlite.Row
+        rows = await conn.execute(
+            "SELECT * FROM jobs "
+            "WHERE status IN ('pending','scraping','summarizing') "
+            "ORDER BY created_at ASC"
+        )
+        return [_row_to_dict(r) for r in await rows.fetchall()]
+
+
+async def prune_old_jobs(limit: int) -> int:
+    """Delete the oldest done/error jobs so total count stays at or below limit.
+    Returns the number of jobs deleted."""
+    async with aiosqlite.connect(_DB_PATH) as conn:
+        total_row = await conn.execute("SELECT COUNT(*) FROM jobs")
+        total = (await total_row.fetchone())[0]
+        excess = total - limit
+        if excess <= 0:
+            return 0
+        cur = await conn.execute(
+            "DELETE FROM jobs WHERE id IN ("
+            "  SELECT id FROM jobs WHERE status IN ('done','error') "
+            "  ORDER BY created_at ASC LIMIT ?"
+            ")",
+            (excess,),
+        )
+        await conn.commit()
+        return cur.rowcount

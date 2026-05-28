@@ -11,10 +11,21 @@ JOB_TIMEOUT = 3600  # 1 hour hard limit per job
 
 logger = logging.getLogger(__name__)
 
+_active_jobs: set[str] = set()
+
+
+def get_active_jobs() -> set[str]:
+    return _active_jobs
+
 
 async def run_job(job_id: str) -> None:
     """Execute a scraping + summarization job, writing progress to SQLite."""
+    if job_id in _active_jobs:
+        logger.warning("Job %s already running — skipping duplicate trigger", job_id)
+        return
+    _active_jobs.add(job_id)
     try:
+        await job_db.update_job(job_id, status="scraping", phase="Discovering papers…", error=None)
         await asyncio.wait_for(_run_job_inner(job_id), timeout=JOB_TIMEOUT)
     except asyncio.TimeoutError:
         logger.error("Job %s exceeded %ds timeout", job_id, JOB_TIMEOUT)
@@ -23,6 +34,8 @@ async def run_job(job_id: str) -> None:
             error=f"Job timed out after {JOB_TIMEOUT // 60} minutes.",
             phase="Timed out",
         )
+    finally:
+        _active_jobs.discard(job_id)
 
 
 async def _run_job_inner(job_id: str) -> None:

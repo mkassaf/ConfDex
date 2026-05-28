@@ -4,6 +4,7 @@ import asyncio
 import csv
 import io
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -13,6 +14,12 @@ from pydantic import BaseModel
 
 from confscraper.web import db as job_db
 from confscraper.web.runner import run_job
+
+_DEFAULT_JOB_LIMIT = 20
+
+
+def _job_limit() -> int:
+    return max(1, int(os.environ.get("MAX_JOB_HISTORY_LIMIT", _DEFAULT_JOB_LIMIT)))
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
@@ -39,6 +46,7 @@ async def create_job(body: CreateJobRequest, background_tasks: BackgroundTasks):
         api_key=body.api_key,
         use_llm_fallback=body.use_llm_fallback,
     )
+    await job_db.prune_old_jobs(_job_limit())
     background_tasks.add_task(run_job, job["id"])
     return job
 

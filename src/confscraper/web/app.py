@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import base64
+import logging
 import os
 import secrets
 from pathlib import Path
@@ -14,6 +16,11 @@ from confscraper.web import db as job_db
 from confscraper.web.routes import jobs as jobs_router
 from confscraper.web.routes import llm as llm_router
 from confscraper.web.routes import ollama as ollama_router
+from confscraper.web.runner import get_active_jobs, run_job
+
+logger = logging.getLogger(__name__)
+
+WATCHDOG_INTERVAL = 60  # seconds between stuck-job checks
 
 _STATIC_DIR = Path(__file__).parent / "static"
 
@@ -56,6 +63,29 @@ def create_app(db_path: Path = Path("confdex.db")) -> FastAPI:
     @app.on_event("startup")
     async def _startup():
         await job_db.init_db()
+
+        # Recover any jobs that were incomplete when the server last stopped
+        incomplete = await job_db.list_incomplete_jobs()
+        if incomplete:
+            logger.info("Recovering %d incomplete job(s) from previous session", len(incomplete))
+            for job in incomplete:
+                asyncio.create_task(run_job(job["id"]))
+
+        # Start watchdog that re-queues stuck jobs every WATCHDOG_INTERVAL seconds
+        asyncio.create_task(_watchdog())
+
+    async def _watchdog():
+        while True:
+            await asyncio.sleep(WATCHDOG_INTERVAL)
+            try:
+                active = get_active_jobs()
+                incomplete = await job_db.list_incomplete_jobs()
+                stuck = [j for j in incomplete if j["id"] not in active]
+                for job in stuck:
+                    logger.warning("Watchdog: re-queuing stuck job %s (status=%s)", job["id"], job["status"])
+                    asyncio.create_task(run_job(job["id"]))
+            except Exception:
+                logger.exception("Watchdog error")
 
     app.include_router(jobs_router.router)
     app.include_router(llm_router.router)
