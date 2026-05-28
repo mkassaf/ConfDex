@@ -81,6 +81,9 @@ jobs:
           key:      ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/confdex
+            docker image prune -af
+            docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml rm -sf confdex
+            docker rmi mkassaf/confdex:latest 2>/dev/null || true
             docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml pull confdex nginx
             ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
             HOST_IP="${{ vars.SSH_HOST }}" \
