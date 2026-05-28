@@ -12,9 +12,12 @@ export default function App() {
       {/* Sidebar */}
       <aside className="w-72 flex-shrink-0 bg-navy-dark border-r border-navy flex flex-col">
         <div className="p-4 border-b border-navy flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-white">ConfDex</h1>
-            <p className="text-xs text-blue-200/50">Conference paper explorer</p>
+          <div className="flex items-center gap-2">
+            <img src="/icon.svg" alt="ConfDex" className="w-8 h-8 rounded" />
+            <div>
+              <h1 className="text-lg font-bold text-white">ConfDex</h1>
+              <p className="text-xs text-blue-200/50">Conference paper explorer</p>
+            </div>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -53,7 +56,7 @@ export default function App() {
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <p className="text-5xl mb-4">📄</p>
+            <img src="/icon.svg" alt="ConfDex" className="w-24 h-24 rounded-2xl mb-5 shadow-lg" />
             <h2 className="text-xl font-semibold text-white mb-2">Welcome to ConfDex</h2>
             <p className="text-sm text-blue-200/50 mb-6 max-w-sm">
               Scrape, summarize, and find relevant papers from academic conferences.
