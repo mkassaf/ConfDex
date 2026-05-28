@@ -27,14 +27,22 @@ export function JobForm() {
     onError: (e: Error) => setError(e.message),
   });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit() {
     setError("");
 
     const track_urls =
       inputMode === "urls"
         ? urlsText.split("\n").map((u) => u.trim()).filter(Boolean)
         : undefined;
+
+    if (inputMode === "conference" && !conference.trim()) {
+      setError("Please enter a conference slug.");
+      return;
+    }
+    if (inputMode === "urls" && (!track_urls || track_urls.length === 0)) {
+      setError("Please enter at least one URL.");
+      return;
+    }
 
     const dedupKey = JSON.stringify({
       conference: inputMode === "conference" ? conference.trim() : undefined,
@@ -62,7 +70,7 @@ export function JobForm() {
   const inputClass = "w-full px-3 py-2 bg-navy-deeper border border-navy rounded text-sm text-white placeholder-blue-200/30 focus:outline-none focus:ring-1 focus:ring-gold";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-5">
       <div>
         <div className="flex gap-2 mb-3">
           {(["conference", "urls"] as const).map((m) => (
@@ -89,7 +97,6 @@ export function JobForm() {
               value={conference}
               onChange={(e) => setConference(e.target.value)}
               placeholder="e.g. icse-2026, fse-2025"
-              required
               className={inputClass}
             />
           </div>
@@ -100,7 +107,6 @@ export function JobForm() {
               value={urlsText}
               onChange={(e) => setUrlsText(e.target.value)}
               rows={4}
-              required
               placeholder={"https://conf.researchr.org/track/icse-2026/icse-2026-research-track\nhttps://..."}
               className={`${inputClass} resize-none font-mono`}
             />
@@ -144,13 +150,14 @@ export function JobForm() {
       )}
 
       <button
-        type="submit"
+        type="button"
+        onClick={handleSubmit}
         disabled={isPending}
         className="w-full py-2.5 bg-gold hover:bg-gold-hover disabled:bg-navy disabled:text-blue-200/30
                    text-navy-dark font-bold rounded-lg transition-colors text-sm"
       >
         {isPending ? "Starting…" : "Scrape & Summarize"}
       </button>
-    </form>
+    </div>
   );
 }
