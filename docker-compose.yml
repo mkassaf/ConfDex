@@ -7,6 +7,7 @@ services:
     volumes:
       - confdex_data:/data
     environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
