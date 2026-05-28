@@ -39,6 +39,7 @@ export function OllamaInstaller({ onInstalled }: Props) {
           disabled={pulling}
         />
         <button
+          type="button"
           onClick={handlePull}
           disabled={pulling || !modelInput.trim()}
           className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white
