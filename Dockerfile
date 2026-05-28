@@ -18,7 +18,11 @@ LABEL org.opencontainers.image.title="ConfDex" \
 
 WORKDIR /app
 
-# System deps for Playwright
+# uv for fast installs
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+ENV UV_SYSTEM_PYTHON=1 UV_NO_CACHE=1
+
+# System deps for Playwright Chromium (rarely changes — cached early)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
     libcups2 libdrm2 libdbus-1-3 libexpat1 libxcb1 libxkbcommon0 \
@@ -26,18 +30,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 libpango-1.0-0 libcairo2 libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python deps before copying source so this layer is cached
+# as long as pyproject.toml doesn't change.
 COPY pyproject.toml ./
-COPY src/ src/
+# Stub package so uv can resolve and install all dependencies
+RUN mkdir -p src/confscraper && touch src/confscraper/__init__.py
+RUN uv pip install .
 
-# Copy built frontend into the package source BEFORE pip install
-# so the static files are baked into site-packages by the installer
-COPY --from=frontend /frontend/dist/ src/confscraper/web/static/
-
-RUN pip install --no-cache-dir .
+# Install Playwright browser — cached unless playwright version changes
 RUN python -m playwright install chromium
 
-EXPOSE 8000
+# Copy actual source (changes often — after all slow steps)
+COPY src/ src/
+# Copy built frontend into the static dir baked into the image
+COPY --from=frontend /frontend/dist/ src/confscraper/web/static/
+# Re-install to register the real package (deps already cached above)
+RUN uv pip install --no-deps .
 
+EXPOSE 8000
 VOLUME ["/data"]
 
 CMD ["confscraper", "serve", \
