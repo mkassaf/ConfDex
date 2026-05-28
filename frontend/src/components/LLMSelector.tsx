@@ -67,6 +67,7 @@ export function LLMSelector({ value, onChange }: Props) {
         {(["local", "remote"] as const).map((src) => (
           <button
             key={src}
+            type="button"
             onClick={() => setSource(src)}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
               value.source === src
@@ -103,6 +104,7 @@ export function LLMSelector({ value, onChange }: Props) {
             <p className="text-xs text-gray-500">No models installed yet. Use the installer below.</p>
           )}
           <button
+            type="button"
             onClick={() => setShowInstaller(!showInstaller)}
             className="text-xs text-blue-400 hover:text-blue-300 underline"
           >

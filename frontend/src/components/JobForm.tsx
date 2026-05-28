@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createJob } from "../api/jobs";
 import { LLMSelector, type LLMConfig } from "./LLMSelector";
@@ -16,6 +16,7 @@ export function JobForm() {
   });
   const [useLLMFallback, setUseLLMFallback] = useState(false);
   const [error, setError] = useState("");
+  const lastSubmit = useRef<{ key: string; at: number } | null>(null);
 
   const { mutate, isPending } = useMutation({
     mutationFn: createJob,
@@ -34,6 +35,19 @@ export function JobForm() {
       inputMode === "urls"
         ? urlsText.split("\n").map((u) => u.trim()).filter(Boolean)
         : undefined;
+
+    const dedupKey = JSON.stringify({
+      conference: inputMode === "conference" ? conference.trim() : undefined,
+      track_urls,
+      topic: topic.trim(),
+      model: llmConfig.model,
+    });
+    const now = Date.now();
+    if (lastSubmit.current && lastSubmit.current.key === dedupKey && now - lastSubmit.current.at < 60_000) {
+      setError("This job was already submitted less than a minute ago. Please wait before resubmitting.");
+      return;
+    }
+    lastSubmit.current = { key: dedupKey, at: now };
 
     mutate({
       conference: inputMode === "conference" ? conference.trim() || undefined : undefined,
