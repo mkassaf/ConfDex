@@ -13,7 +13,8 @@ Available as a **CLI tool** or a **self-hosted web app**.
 - [Web App (recommended)](#web-app-recommended)
   - [Docker deployment](#docker-deployment)
   - [Password protection](#set-an-admin-password)
-  - [HTTPS](#https-with-a-domain-name)
+  - [HTTPS (self-signed / IP)](#https-with-a-self-signed-certificate-ip-address-no-domain)
+  - [HTTPS (domain)](#https-with-a-domain-name)
   - [Manual deployment](#manual-deployment)
 - [CLI installation](#cli-installation)
 - [CLI usage](#cli-usage)
@@ -91,6 +92,30 @@ You can also pass it inline without a `.env` file:
 ADMIN_PASSWORD=your-strong-password docker compose up -d
 ```
 
+#### HTTPS with a self-signed certificate (IP address, no domain)
+
+Use this when you want HTTPS but don't have a domain name — just an IP address.
+
+**Requirements:** ports 80 and 443 open.
+
+Add `HOST_IP` to your `.env`:
+
+```bash
+# .env
+HOST_IP=192.168.1.100        # your server's IP address
+ADMIN_PASSWORD=your-strong-password
+```
+
+Start everything:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d
+```
+
+The app is now at **https://192.168.1.100**. On the first start, a self-signed certificate is generated automatically and stored in a Docker volume (persists across restarts).
+
+> **Browser warning:** because the certificate is self-signed, your browser will show a security warning. Click **Advanced → Proceed** (Chrome) or **Accept the Risk** (Firefox) to continue.
+
 #### HTTPS with a domain name
 
 **Requirements:** a domain pointing to your server, ports 80 and 443 open.
@@ -139,7 +164,8 @@ Job history and results are stored in a Docker volume (`confdex_data`). Download
 | Variable | Description |
 |---|---|
 | `ADMIN_PASSWORD` | Password for the web UI (leave blank to disable auth) |
-| `DOMAIN` | Your domain name (required for HTTPS) |
+| `DOMAIN` | Your domain name (required for domain-based HTTPS) |
+| `HOST_IP` | Your server's IP address (required for self-signed HTTPS) |
 | `ANTHROPIC_API_KEY` | Anthropic Claude API key |
 | `OPENAI_API_KEY` | OpenAI API key |
 | `DEEPSEEK_API_KEY` | DeepSeek API key |

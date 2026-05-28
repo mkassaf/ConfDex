@@ -1,0 +1,51 @@
+# Self-signed SSL overlay — for IP-based deployments (no domain needed).
+# Layer on top of docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d
+#
+# Prerequisites:
+#   1. Set HOST_IP in your .env file (e.g. HOST_IP=192.168.1.100)
+#   2. Open ports 80 and 443 on your firewall / router
+#
+# The certificate is generated automatically on first start and stored in the
+# ssl_certs volume — it survives container restarts.
+#
+# Browsers will show a security warning because the cert is self-signed.
+# Click "Advanced → Proceed" (Chrome) or "Accept the risk" (Firefox).
+
+services:
+  # ConfDex no longer exposes port 8000 directly — Nginx is the only entry point
+  confdex:
+    ports: !reset []
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/selfsigned.conf:/etc/nginx/conf.d/default.conf:ro
+      - ssl_certs:/etc/nginx/certs
+    command: >
+      /bin/sh -c "
+        if [ ! -f /etc/nginx/certs/cert.pem ]; then
+          echo 'Generating self-signed certificate for IP: $${HOST_IP:-localhost}';
+          openssl req -x509 -newkey rsa:4096
+            -keyout /etc/nginx/certs/key.pem
+            -out    /etc/nginx/certs/cert.pem
+            -days 3650 -nodes
+            -subj '/CN=$${HOST_IP:-localhost}'
+            -addext 'subjectAltName=IP:$${HOST_IP:-127.0.0.1}';
+        fi &&
+        nginx -g 'daemon off;'
+      "
+    environment:
+      - HOST_IP=${HOST_IP:-127.0.0.1}
+    depends_on:
+      - confdex
+
+volumes:
+  ssl_certs:
