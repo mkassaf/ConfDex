@@ -15,6 +15,7 @@ Available as a **CLI tool** or a **self-hosted web app**.
   - [Password protection](#set-an-admin-password)
   - [HTTPS (self-signed / IP)](#https-with-a-self-signed-certificate-ip-address-no-domain)
   - [HTTPS (domain)](#https-with-a-domain-name)
+  - [Deploy to a remote server](#deploy-to-a-remote-linux-server)
   - [Manual deployment](#manual-deployment)
 - [CLI installation](#cli-installation)
 - [CLI usage](#cli-usage)
@@ -196,6 +197,81 @@ If you want GitHub to redeploy your server automatically on every push, go to yo
 | `SSH_USER` | SSH login username |
 
 When `SSH_HOST` variable is set, the workflow SSHes into your server after every push and runs `docker compose pull && docker compose up -d` automatically.
+
+---
+
+### Deploy to a remote Linux server
+
+These steps show how to get ConfDex running on any Linux server (Ubuntu, Debian, etc.) with HTTPS and a password, accessible from the internet.
+
+#### 1. Install Docker on the server
+
+```bash
+# Connect to your server
+ssh user@your-server-ip
+
+# Install Docker Engine + Compose (Ubuntu/Debian)
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER   # allow running docker without sudo
+newgrp docker                   # apply group change without logout
+```
+
+#### 2. Download the compose files
+
+```bash
+mkdir ~/confdex && cd ~/confdex
+
+curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/docker-compose.selfsigned.yml
+curl -O https://raw.githubusercontent.com/mkassaf/ConfDex/main/nginx/selfsigned.conf
+mkdir -p nginx && mv selfsigned.conf nginx/
+```
+
+#### 3. Create your `.env` file
+
+```bash
+cat > .env <<EOF
+HOST_IP=your-server-ip        # e.g. 203.0.113.10
+ADMIN_PASSWORD=your-strong-password
+ANTHROPIC_API_KEY=            # optional — fill in if you use Claude
+OPENAI_API_KEY=               # optional
+EOF
+```
+
+> **Login:** when the browser asks for credentials, leave the username blank and enter your `ADMIN_PASSWORD`.
+
+#### 4. Open firewall ports
+
+```bash
+# Ubuntu ufw
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw reload
+```
+
+On cloud providers (AWS, GCP, Azure, DigitalOcean) also open ports 80 and 443 in your instance's security group / firewall rules.
+
+#### 5. Start
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d
+```
+
+Docker pulls the image automatically. The app is now at **https://your-server-ip**.
+
+On the first start, a self-signed certificate is generated. Your browser will show a security warning — click **Advanced → Proceed** (Chrome) or **Accept the Risk** (Firefox).
+
+#### 6. Update to the latest version
+
+```bash
+cd ~/confdex
+docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml pull
+docker compose -f docker-compose.yml -f docker-compose.selfsigned.yml up -d
+```
+
+#### 7. (Optional) Auto-deploy on every push via GitHub Actions
+
+If you push to your own fork and want the server to update automatically on every push, see [Automated deployment via GitHub Actions](#automated-deployment-via-github-actions).
 
 ---
 
