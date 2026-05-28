@@ -79,8 +79,18 @@ async def scrape(
 
             results = await asyncio.gather(*(fetch_one(u) for u in unique_urls))
 
+        _NON_PAPER = re.compile(
+            r"^\s*(coffee|lunch|break|reception|dinner|keynote\s+break|"
+            r"welcome|opening|closing|registration|social event|excursion|"
+            r"networking|poster session|demo session|panel|awards?)\b",
+            re.IGNORECASE,
+        )
+
         for r in results:
             if r is not None:
+                if _NON_PAPER.match(r.title or ""):
+                    logger.debug("Skipping non-paper event: %s", r.title)
+                    continue
                 papers.append(r)
 
         if failures:
