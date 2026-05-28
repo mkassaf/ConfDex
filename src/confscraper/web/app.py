@@ -65,7 +65,10 @@ def create_app(db_path: Path = Path("confdex.db")) -> FastAPI:
         app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
 
         @app.get("/{full_path:path}", include_in_schema=False)
-        async def spa_fallback(_request: Request, full_path: str):  # noqa: ARG001
+        async def spa_fallback(_request: Request, full_path: str):
+            file = _STATIC_DIR / full_path
+            if file.is_file():
+                return FileResponse(file)
             return FileResponse(_STATIC_DIR / "index.html")
     else:
         @app.get("/", include_in_schema=False)
