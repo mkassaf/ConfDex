@@ -151,18 +151,25 @@ LLM keys set here are used as server-side defaults. You can also enter a key dir
 
 #### Automated deployment via GitHub Actions
 
-If you want GitHub to redeploy your server automatically on every push, add these secrets in your GitHub repo → **Settings → Secrets and variables → Actions**:
+If you want GitHub to redeploy your server automatically on every push, go to your repo → **Settings → Secrets and variables → Actions** and add:
+
+**Secrets** (sensitive values, never visible after saving):
 
 | Secret | Description |
 |---|---|
-| `DOCKERHUB_USERNAME` | Your Docker Hub username |
 | `DOCKERHUB_TOKEN` | Docker Hub access token |
 | `ADMIN_PASSWORD` | Password for the ConfDex web UI |
-| `SSH_HOST` | Server IP or hostname |
-| `SSH_USER` | SSH login username |
 | `SSH_PRIVATE_KEY` | Private key for SSH authentication |
 
-When `SSH_HOST` is set, the workflow will SSH into your server after every push and run `docker compose pull && docker compose up -d` automatically.
+**Variables** (non-sensitive, used in `if` conditions):
+
+| Variable | Description |
+|---|---|
+| `DOCKERHUB_USERNAME` | Your Docker Hub username |
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USER` | SSH login username |
+
+When `SSH_HOST` variable is set, the workflow SSHes into your server after every push and runs `docker compose pull && docker compose up -d` automatically.
 
 ---
 

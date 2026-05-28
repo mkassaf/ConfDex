@@ -61,24 +61,23 @@ jobs:
           readme-filepath: ./README.md
 
   # ── Deploy to server (optional) ─────────────────────────────────────────────
-  # Runs only when SSH_HOST secret is set.
-  # Required GitHub secrets:
-  #   SSH_HOST          — server IP or hostname
-  #   SSH_USER          — SSH login username
-  #   SSH_PRIVATE_KEY   — private key for SSH authentication
-  #   ADMIN_PASSWORD    — password for the ConfDex web UI
+  # Runs only when SSH_HOST variable is set (Settings → Variables → Actions).
+  # Required GitHub secrets:    SSH_PRIVATE_KEY, ADMIN_PASSWORD
+  # Required GitHub variables:  SSH_HOST, SSH_USER
   deploy:
     needs: push
     runs-on: ubuntu-latest
-    if: ${{ secrets.SSH_HOST != '' }}
+    # Uses a variable (not secret) for the if-condition — secrets cannot be
+    # evaluated in `if` expressions on GitHub Actions.
+    if: vars.SSH_HOST != ''
     steps:
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host:       ${{ secrets.SSH_HOST }}
-          username:   ${{ secrets.SSH_USER }}
-          key:        ${{ secrets.SSH_PRIVATE_KEY }}
+          host:     ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/confdex
             docker compose pull
-            ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} docker compose up -d
+            ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" docker compose up -d
