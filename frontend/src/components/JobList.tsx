@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { listJobs, type Job } from "../api/jobs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { listJobs, deleteJob, type Job } from "../api/jobs";
 
 const STATUS_STYLES: Record<string, string> = {
   pending:     "bg-navy text-blue-200",
@@ -20,14 +20,37 @@ function StatusBadge({ status }: { status: Job["status"] }) {
 interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onDeleted?: (id: string) => void;
 }
 
-export function JobList({ selectedId, onSelect }: Props) {
+function TrashIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+export function JobList({ selectedId, onSelect, onDeleted }: Props) {
+  const qc = useQueryClient();
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
     refetchInterval: 5_000,
   });
+
+  const { mutate: remove } = useMutation({
+    mutationFn: (id: string) => deleteJob(id),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ["jobs"] });
+      onDeleted?.(id);
+    },
+  });
+
+  function handleDelete(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    if (confirm("Delete this job and its results?")) remove(id);
+  }
 
   if (isLoading) return <p className="text-sm text-blue-200/40 p-4">Loading…</p>;
   if (jobs.length === 0) return <p className="text-sm text-blue-200/30 p-4">No jobs yet. Start one →</p>;
@@ -35,10 +58,11 @@ export function JobList({ selectedId, onSelect }: Props) {
   return (
     <ul className="divide-y divide-navy">
       {jobs.map((job) => (
-        <li key={job.id}>
+        <li key={job.id} className="group relative">
           <button
+            type="button"
             onClick={() => onSelect(job.id)}
-            className={`w-full text-left px-4 py-3 hover:bg-navy transition-colors ${
+            className={`w-full text-left px-4 py-3 pr-10 hover:bg-navy transition-colors ${
               selectedId === job.id ? "bg-navy border-l-2 border-gold" : ""
             }`}
           >
@@ -66,6 +90,18 @@ export function JobList({ selectedId, onSelect }: Props) {
                 </div>
               </div>
             )}
+          </button>
+
+          {/* Delete button — visible on row hover */}
+          <button
+            type="button"
+            onClick={(e) => handleDelete(e, job.id)}
+            title="Delete job"
+            className="absolute right-2 top-1/2 -translate-y-1/2
+                       opacity-0 group-hover:opacity-100 transition-opacity
+                       p-1.5 rounded text-blue-200/30 hover:text-red-400 hover:bg-red-950/40"
+          >
+            <TrashIcon />
           </button>
         </li>
       ))}
