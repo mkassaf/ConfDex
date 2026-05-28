@@ -40,7 +40,9 @@ Abstract: {abstract}
 # ── Stage 2: topic relevance scoring ────────────────────────────────────────
 
 _TOPIC_SCORE_PROMPT_V2 = """\
-Rate how relevant this research paper is to the topic of interest below.
+You are evaluating whether a research paper is PRIMARILY about the given topic.
+Be strict and conservative: a high score means the topic is the paper's central subject,
+not merely a tool, backdrop, or side contribution.
 
 Topic of Interest: "{topic}"
 
@@ -51,17 +53,29 @@ Paper Information:
   Domain:      {domain}
   Methodology: {methodology}
 
-Scoring scale:
-  0-2   Unrelated — the topic is not addressed in any way
-  3-4   Peripheral — shares some background or context but not the focus
-  5-6   Partially relevant — relevant to one aspect or applies tangentially
-  7-8   Substantially relevant — directly contributes to the topic area
-  9-10  Highly relevant — directly studies, solves, or advances the topic
+First ask yourself: "Would this paper be fundamentally different if the topic did not exist?"
+  - YES → the topic is its primary focus → score 7-10
+  - PARTIALLY → the topic is one of several themes → score 4-6
+  - NO  → the topic is peripheral, a tool, or background → score 0-3
+
+Strict scoring scale:
+  9-10  The paper's core contribution IS the topic. The title/abstract make this unmistakable.
+  7-8   The topic is a primary focus. Removing it would make the paper's main claim collapse.
+  5-6   The topic is one of 2-3 equal themes, or a direct application domain.
+  3-4   The topic appears but is background, motivation, or a minor component only.
+  1-2   The topic is briefly mentioned or loosely related at best.
+  0     The topic is absent or the connection is a stretch.
+
+Important rules:
+  - Papers that USE the topic as a tool/baseline without studying it → score ≤ 3
+  - Papers that MENTION the topic in related work only → score ≤ 2
+  - Papers with the topic in a single example or case study → score ≤ 4
+  - Do NOT give 7+ unless the topic is central to the research question and contribution
 
 Return a JSON object with exactly these keys:
   "score"    : integer 0-10
-  "reasoning": 1-2 sentence explanation of the score
-  "matching" : list of specific paper aspects that match the topic (empty list if score < 3)
+  "reasoning": 1-2 sentences explaining why the topic is or is not the primary focus
+  "matching" : list of specific aspects where the paper directly addresses the topic (empty if score < 4)
 
 Return ONLY valid JSON, no markdown fences.
 """
