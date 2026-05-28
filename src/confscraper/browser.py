@@ -44,16 +44,10 @@ def _detail_urls_from_html(html: str, base_url: str) -> list[str]:
     return found
 
 
-async def discover_papers_via_browser(url: str) -> list[str]:
-    """
-    For JS-heavy pages (home/program pages):
-    1. Render the page with Playwright
-    2. Collect all static /details/ links
-    3. For each data-event-modal ID, trigger the jQuery click handler
-       and capture the JSON response (which contains the modal HTML)
-    4. Parse detail URLs from the modal HTML fragments
-    """
-    logger.info("Browser-based discovery for %s", url)
+_BROWSER_TIMEOUT = 180  # seconds total for browser-based discovery
+
+
+async def _discover_papers_via_browser_inner(url: str) -> list[str]:
     detail_urls: set[str] = set()
 
     async with async_playwright() as pw:
@@ -61,7 +55,6 @@ async def discover_papers_via_browser(url: str) -> list[str]:
         context = await browser.new_context(user_agent=USER_AGENT)
         page = await context.new_page()
 
-        # Collect modal AJAX responses as they arrive
         modal_htmls: list[str] = []
 
         async def on_response(resp) -> None:
@@ -69,7 +62,6 @@ async def discover_papers_via_browser(url: str) -> list[str]:
                 return
             try:
                 body = await resp.text()
-                # Response is a JSON array: [{"action":"append","id":"event-modals","value":"<HTML>"}]
                 items = json.loads(body)
                 for item in items:
                     if isinstance(item, dict) and "value" in item:
@@ -81,16 +73,12 @@ async def discover_papers_via_browser(url: str) -> list[str]:
         await page.goto(url, wait_until="networkidle", timeout=60_000)
         html = await page.content()
 
-        # Static /details/ links (directly in page HTML)
         for link in _detail_urls_from_html(html, url):
             detail_urls.add(link)
 
-        # Extract all event modal IDs
         event_ids = re.findall(r'data-event-modal=["\']([^"\']+)["\']', html)
         logger.info("Found %d event modal IDs", len(event_ids))
 
-        # Trigger jQuery click on each event-modal element in batches.
-        # jQuery's .trigger("click") fires the bound handler which makes the AJAX call.
         sem = asyncio.Semaphore(_AJAX_CONCURRENCY)
 
         async def trigger_modal(event_id: str) -> None:
@@ -100,21 +88,34 @@ async def discover_papers_via_browser(url: str) -> list[str]:
                         '(id) => jQuery("[data-event-modal=" + JSON.stringify(id) + "]").first().trigger("click")',
                         event_id,
                     )
-                    # Brief pause to allow the AJAX request to fire
                     await asyncio.sleep(0.3)
                 except Exception as e:
                     logger.debug("Modal trigger failed for %s: %s", event_id, e)
 
         await asyncio.gather(*(trigger_modal(eid) for eid in event_ids))
-
-        # Wait for any in-flight responses to land
         await asyncio.sleep(2)
         await browser.close()
 
-    # Parse detail URLs from all collected modal HTML fragments
     for fragment in modal_htmls:
         for link in _detail_urls_from_html(fragment, url):
             detail_urls.add(link)
 
-    logger.info("Browser discovery found %d detail URLs", len(detail_urls))
     return list(detail_urls)
+
+
+async def discover_papers_via_browser(url: str) -> list[str]:
+    """Browser-based paper discovery with a hard timeout to prevent hung jobs."""
+    logger.info("Browser-based discovery for %s", url)
+    try:
+        urls = await asyncio.wait_for(
+            _discover_papers_via_browser_inner(url),
+            timeout=_BROWSER_TIMEOUT,
+        )
+        logger.info("Browser discovery found %d detail URLs", len(urls))
+        return urls
+    except asyncio.TimeoutError:
+        logger.error("Browser discovery timed out after %ds for %s", _BROWSER_TIMEOUT, url)
+        raise RuntimeError(
+            f"Browser-based paper discovery timed out after {_BROWSER_TIMEOUT}s for {url}. "
+            "The conference page may be too slow or structured differently."
+        )

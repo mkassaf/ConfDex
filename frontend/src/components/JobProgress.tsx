@@ -54,19 +54,42 @@ export function JobProgress({ jobId, initialStatus, initialError, initialPhase, 
     progress_total: initialTotal,
   });
 
+  // Sync baseline from props (covers already-finished jobs and polling fallback)
+  useEffect(() => {
+    setState((prev) => ({
+      status: initialStatus,
+      phase: initialPhase ?? prev.phase,
+      error: initialError ?? prev.error,
+      progress_current: initialCurrent ?? prev.progress_current,
+      progress_total: initialTotal ?? prev.progress_total,
+    }));
+  }, [initialStatus, initialError, initialPhase, initialCurrent, initialTotal]);
+
+  // SSE for sub-second updates while job is running
   useEffect(() => {
     if (["done", "error"].includes(initialStatus)) return;
 
-    const es = new EventSource(`/api/jobs/${jobId}/stream`);
-    es.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        setState(data);
-        if (["done", "error"].includes(data.status)) es.close();
-      } catch { /* skip */ }
-    };
-    es.onerror = () => es.close();
-    return () => es.close();
+    let es: EventSource | null = null;
+    let cancelled = false;
+
+    function connect() {
+      if (cancelled) return;
+      es = new EventSource(`/api/jobs/${jobId}/stream`);
+      es.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          setState(data);
+          if (["done", "error"].includes(data.status)) es?.close();
+        } catch { /* skip */ }
+      };
+      es.onerror = () => {
+        es?.close();
+        if (!cancelled) setTimeout(connect, 2_000);
+      };
+    }
+
+    connect();
+    return () => { cancelled = true; es?.close(); };
   }, [jobId, initialStatus]);
 
   const pct = state.progress_total > 0

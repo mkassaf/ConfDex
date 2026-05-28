@@ -7,11 +7,25 @@ import traceback
 from confscraper.pipeline import scrape, scrape_conference
 from confscraper.web import db as job_db
 
+JOB_TIMEOUT = 3600  # 1 hour hard limit per job
+
 logger = logging.getLogger(__name__)
 
 
 async def run_job(job_id: str) -> None:
     """Execute a scraping + summarization job, writing progress to SQLite."""
+    try:
+        await asyncio.wait_for(_run_job_inner(job_id), timeout=JOB_TIMEOUT)
+    except asyncio.TimeoutError:
+        logger.error("Job %s exceeded %ds timeout", job_id, JOB_TIMEOUT)
+        await job_db.update_job(
+            job_id, status="error",
+            error=f"Job timed out after {JOB_TIMEOUT // 60} minutes.",
+            phase="Timed out",
+        )
+
+
+async def _run_job_inner(job_id: str) -> None:
     job = await job_db.get_job(job_id)
     if not job:
         logger.error("Job %s not found", job_id)
