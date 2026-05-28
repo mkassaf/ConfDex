@@ -62,7 +62,15 @@ class ResearchrAdapter(Adapter):
             return await discover_papers_via_browser(track_url)
 
         resp = await self._client.get(track_url)
-        urls = self._extract_detail_urls(resp.text, track_url)
+        html = resp.text
+
+        # If the page uses event-modal JS widgets, static links are incomplete —
+        # use the browser to trigger each modal and collect all detail URLs.
+        if re.search(r'data-event-modal=', html):
+            logger.info("Event-modal widgets detected, using browser for %s", track_url)
+            return await discover_papers_via_browser(track_url)
+
+        urls = self._extract_detail_urls(html, track_url)
 
         # If static fetch found nothing, retry with browser
         if not urls:
