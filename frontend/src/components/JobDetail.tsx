@@ -22,7 +22,7 @@ export function JobDetail({ jobId }: Props) {
   if (!job) return <p className="text-red-400 text-sm p-6">Job not found.</p>;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-5 md:space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-white">

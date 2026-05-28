@@ -54,11 +54,13 @@ export function ResultsTable({ summaries, jobId }: Props) {
       header: "Domain",
       cell: (i) => <span className="text-xs text-blue-200/50">{i.getValue() ?? "—"}</span>,
       size: 150,
+      meta: { className: "hidden md:table-cell" },
     }),
     col.accessor("methodology", {
       header: "Method",
       cell: (i) => <span className="text-xs text-blue-200/40">{i.getValue() ?? "—"}</span>,
       size: 130,
+      meta: { className: "hidden md:table-cell" },
     }),
   ], []);
 
@@ -110,7 +112,7 @@ export function ResultsTable({ summaries, jobId }: Props) {
                   <th
                     key={h.id}
                     onClick={h.column.getToggleSortingHandler()}
-                    className="px-3 py-2 cursor-pointer select-none hover:text-gold whitespace-nowrap"
+                    className={`px-3 py-2 cursor-pointer select-none hover:text-gold whitespace-nowrap ${(h.column.columnDef.meta as any)?.className ?? ""}`}
                     style={{ width: h.column.columnDef.size }}
                   >
                     {flexRender(h.column.columnDef.header, h.getContext())}
@@ -133,7 +135,7 @@ export function ResultsTable({ summaries, jobId }: Props) {
                   >
                     <td className="px-3 py-2 text-blue-200/30 text-xs">{isExpanded ? "▼" : "▶"}</td>
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-3 py-2">
+                      <td key={cell.id} className={`px-3 py-2 ${(cell.column.columnDef.meta as any)?.className ?? ""}`}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}

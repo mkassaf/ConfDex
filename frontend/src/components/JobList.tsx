@@ -92,14 +92,14 @@ export function JobList({ selectedId, onSelect, onDeleted }: Props) {
             )}
           </button>
 
-          {/* Delete button — visible on row hover */}
+          {/* Delete — always visible on mobile (no hover), hover-only on desktop */}
           <button
             type="button"
             onClick={(e) => handleDelete(e, job.id)}
             title="Delete job"
             className="absolute right-2 top-1/2 -translate-y-1/2
-                       opacity-0 group-hover:opacity-100 transition-opacity
-                       p-1.5 rounded text-blue-200/30 hover:text-red-400 hover:bg-red-950/40"
+                       opacity-30 md:opacity-0 md:group-hover:opacity-100 transition-opacity
+                       p-1.5 rounded text-blue-200/50 hover:text-red-400 hover:bg-red-950/40"
           >
             <TrashIcon />
           </button>
