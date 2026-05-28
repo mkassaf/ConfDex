@@ -27,7 +27,7 @@ export function JobDetail({ jobId, onDeleted }: Props) {
     },
   });
 
-  if (isLoading) return <p className="text-gray-500 text-sm p-6">Loading…</p>;
+  if (isLoading) return <p className="text-blue-200/40 text-sm p-6">Loading…</p>;
   if (!job) return <p className="text-red-400 text-sm p-6">Job not found.</p>;
 
   return (
@@ -38,8 +38,8 @@ export function JobDetail({ jobId, onDeleted }: Props) {
           <h2 className="text-lg font-semibold text-white">
             {job.conference ?? "Custom URLs"}
           </h2>
-          {job.topic && <p className="text-sm text-indigo-400 mt-0.5">Topic: {job.topic}</p>}
-          <p className="text-xs text-gray-600 mt-1">
+          {job.topic && <p className="text-sm text-gold mt-0.5">Topic: {job.topic}</p>}
+          <p className="text-xs text-blue-200/30 mt-1">
             Model: {job.model} · Created: {new Date(job.created_at).toLocaleString()}
           </p>
         </div>
@@ -53,7 +53,7 @@ export function JobDetail({ jobId, onDeleted }: Props) {
       </div>
 
       {/* Progress */}
-      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+      <div className="bg-navy-dark rounded-lg p-4 border border-navy">
         <JobProgress jobId={jobId} initialStatus={job.status} />
       </div>
 
@@ -62,7 +62,7 @@ export function JobDetail({ jobId, onDeleted }: Props) {
         <ResultsTable summaries={job.summaries} jobId={jobId} />
       )}
       {job.status === "done" && (!job.summaries || job.summaries.length === 0) && (
-        <p className="text-sm text-gray-500">No papers found.</p>
+        <p className="text-sm text-blue-200/40">No papers found.</p>
       )}
     </div>
   );

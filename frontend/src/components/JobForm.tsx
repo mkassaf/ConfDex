@@ -45,6 +45,8 @@ export function JobForm() {
     });
   }
 
+  const inputClass = "w-full px-3 py-2 bg-navy-deeper border border-navy rounded text-sm text-white placeholder-blue-200/30 focus:outline-none focus:ring-1 focus:ring-gold";
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
@@ -56,8 +58,8 @@ export function JobForm() {
               onClick={() => setInputMode(m)}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors border ${
                 inputMode === m
-                  ? "bg-indigo-600 border-indigo-500 text-white"
-                  : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
+                  ? "bg-gold border-gold text-navy-dark font-bold"
+                  : "bg-navy-dark border-navy text-blue-200/50 hover:text-white"
               }`}
             >
               {m === "conference" ? "Conference slug" : "Custom URLs"}
@@ -67,49 +69,46 @@ export function JobForm() {
 
         {inputMode === "conference" ? (
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Conference slug</label>
+            <label className="block text-xs text-blue-200/50 mb-1">Conference slug</label>
             <input
               type="text"
               value={conference}
               onChange={(e) => setConference(e.target.value)}
               placeholder="e.g. icse-2026, fse-2025"
               required
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white
-                         focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className={inputClass}
             />
           </div>
         ) : (
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Track URLs (one per line)</label>
+            <label className="block text-xs text-blue-200/50 mb-1">Track URLs (one per line)</label>
             <textarea
               value={urlsText}
               onChange={(e) => setUrlsText(e.target.value)}
               rows={4}
               required
               placeholder={"https://conf.researchr.org/track/icse-2026/icse-2026-research-track\nhttps://..."}
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white
-                         focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none font-mono"
+              className={`${inputClass} resize-none font-mono`}
             />
           </div>
         )}
       </div>
 
       <div>
-        <label className="block text-xs text-gray-400 mb-1">
-          Topic for relevance scoring <span className="text-gray-600">(optional)</span>
+        <label className="block text-xs text-blue-200/50 mb-1">
+          Topic for relevance scoring <span className="text-blue-200/30">(optional)</span>
         </label>
         <input
           type="text"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="e.g. software testing, LLM agents, security"
-          className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white
-                     focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="block text-xs text-gray-400 mb-2">LLM Configuration</label>
+        <label className="block text-xs text-blue-200/50 mb-2">LLM Configuration</label>
         <LLMSelector value={llmConfig} onChange={setLlmConfig} />
       </div>
 
@@ -119,9 +118,9 @@ export function JobForm() {
           type="checkbox"
           checked={useLLMFallback}
           onChange={(e) => setUseLLMFallback(e.target.checked)}
-          className="rounded border-gray-600 bg-gray-800"
+          className="rounded border-navy bg-navy-dark accent-gold"
         />
-        <label htmlFor="llm-fallback" className="text-xs text-gray-400">
+        <label htmlFor="llm-fallback" className="text-xs text-blue-200/50">
           Use LLM fallback for abstract extraction
         </label>
       </div>
@@ -133,8 +132,8 @@ export function JobForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 text-white
-                   font-medium rounded-lg transition-colors text-sm"
+        className="w-full py-2.5 bg-gold hover:bg-gold-hover disabled:bg-navy disabled:text-blue-200/30
+                   text-navy-dark font-bold rounded-lg transition-colors text-sm"
       >
         {isPending ? "Starting…" : "Scrape & Summarize"}
       </button>

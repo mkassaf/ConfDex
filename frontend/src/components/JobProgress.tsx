@@ -40,29 +40,29 @@ export function JobProgress({ jobId, initialStatus }: Props) {
     : null;
 
   const statusColor: Record<string, string> = {
-    pending: "text-gray-400",
-    scraping: "text-blue-400",
-    summarizing: "text-indigo-400",
-    done: "text-green-400",
-    error: "text-red-400",
+    pending:     "text-blue-200/50",
+    scraping:    "text-gold",
+    summarizing: "text-gold",
+    done:        "text-green-400",
+    error:       "text-red-400",
   };
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <span className={`font-semibold capitalize ${statusColor[state.status] ?? "text-gray-400"}`}>
+        <span className={`font-semibold capitalize ${statusColor[state.status] ?? "text-blue-200/50"}`}>
           {state.status}
         </span>
-        {state.phase && <span className="text-sm text-gray-400">{state.phase}</span>}
+        {state.phase && <span className="text-sm text-blue-200/50">{state.phase}</span>}
         {pct !== null && (
-          <span className="ml-auto text-sm text-gray-500">{pct}%</span>
+          <span className="ml-auto text-sm text-blue-200/40">{pct}%</span>
         )}
       </div>
 
       {["scraping", "summarizing", "pending"].includes(state.status) && (
-        <div className="w-full bg-gray-800 rounded-full h-2">
+        <div className="w-full bg-navy-deeper rounded-full h-2">
           <div
-            className="bg-indigo-500 h-2 rounded-full transition-all"
+            className="bg-gold h-2 rounded-full transition-all"
             style={{
               width: pct !== null ? `${pct}%` : "5%",
               animation: pct === null ? "pulse 1.5s infinite" : undefined,
