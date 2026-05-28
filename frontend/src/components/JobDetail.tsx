@@ -54,7 +54,14 @@ export function JobDetail({ jobId, onDeleted }: Props) {
 
       {/* Progress */}
       <div className="bg-navy-dark rounded-lg p-4 border border-navy">
-        <JobProgress jobId={jobId} initialStatus={job.status} />
+        <JobProgress
+          jobId={jobId}
+          initialStatus={job.status}
+          initialError={job.error}
+          initialPhase={job.phase}
+          initialCurrent={job.progress_current}
+          initialTotal={job.progress_total}
+        />
       </div>
 
       {/* Results */}

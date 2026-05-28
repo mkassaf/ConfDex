@@ -1,5 +1,33 @@
 import { useEffect, useState } from "react";
 
+function ErrorDetail({ error }: { error: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const lines = error.trim().split("\n");
+  const summary = [...lines].reverse().find((l: string) => l.trim().length > 0) ?? error;
+  const hasTrace = lines.length > 1;
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded p-3">
+        {summary}
+      </p>
+      {hasTrace && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="text-xs text-red-400/60 hover:text-red-400 underline"
+        >
+          {expanded ? "Hide details" : "Show full traceback"}
+        </button>
+      )}
+      {expanded && (
+        <pre className="text-xs text-red-400/70 bg-red-950/20 border border-red-900/50 rounded p-3 overflow-auto max-h-48 whitespace-pre-wrap">
+          {error}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 interface ProgressState {
   status: string;
   phase?: string;
@@ -11,13 +39,19 @@ interface ProgressState {
 interface Props {
   jobId: string;
   initialStatus: string;
+  initialError?: string;
+  initialPhase?: string;
+  initialCurrent?: number;
+  initialTotal?: number;
 }
 
-export function JobProgress({ jobId, initialStatus }: Props) {
+export function JobProgress({ jobId, initialStatus, initialError, initialPhase, initialCurrent = 0, initialTotal = 0 }: Props) {
   const [state, setState] = useState<ProgressState>({
     status: initialStatus,
-    progress_current: 0,
-    progress_total: 0,
+    phase: initialPhase,
+    error: initialError,
+    progress_current: initialCurrent,
+    progress_total: initialTotal,
   });
 
   useEffect(() => {
@@ -72,9 +106,7 @@ export function JobProgress({ jobId, initialStatus }: Props) {
       )}
 
       {state.status === "error" && state.error && (
-        <pre className="text-xs text-red-400 bg-red-950/30 border border-red-900 rounded p-3 overflow-auto max-h-48 whitespace-pre-wrap">
-          {state.error}
-        </pre>
+        <ErrorDetail error={state.error} />
       )}
     </div>
   );
