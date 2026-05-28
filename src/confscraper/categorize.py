@@ -108,6 +108,7 @@ def _call_llm(prompt: str, model: str, api_key: str | None, max_tokens: int = 10
         model=model,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
+        timeout=60,
     )
     if api_key:
         kwargs["api_key"] = api_key
