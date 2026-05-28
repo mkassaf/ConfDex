@@ -236,7 +236,10 @@ def categorize_paper_v2(
             )
             try:
                 stage2 = _call_llm(prompt2, model, api_key, max_tokens=512)
-                result["score"] = stage2.get("score")
+                raw_score = stage2.get("score")
+                if raw_score is not None:
+                    raw_score = max(0, min(10, int(raw_score)))
+                result["score"] = raw_score
                 result["score_reasoning"] = stage2.get("reasoning")
                 result["score_matching"] = stage2.get("matching", [])
             except Exception as e:
