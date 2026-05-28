@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getOllamaModels, getOllamaStatus } from "../api/ollama";
+import { getEnvKeys, type EnvKeys } from "../api/llm";
 import { OllamaInstaller } from "./OllamaInstaller";
 
 export interface LLMConfig {
@@ -14,7 +15,7 @@ interface Props {
   onChange: (v: LLMConfig) => void;
 }
 
-const REMOTE_PRESETS = [
+export const REMOTE_PRESETS = [
   { label: "Anthropic Claude (Sonnet 4.6)", model: "claude-sonnet-4-6", keyHint: "ANTHROPIC_API_KEY" },
   { label: "Anthropic Claude (Opus 4.7)", model: "claude-opus-4-7", keyHint: "ANTHROPIC_API_KEY" },
   { label: "OpenAI GPT-4o", model: "gpt-4o", keyHint: "OPENAI_API_KEY" },
@@ -28,9 +29,20 @@ const REMOTE_PRESETS = [
   { label: "Custom / Other", model: "", keyHint: "" },
 ];
 
+export function keyRequiredFor(preset: typeof REMOTE_PRESETS[number], envKeys: EnvKeys): boolean {
+  if (!preset.keyHint) return false; // custom — optional
+  return !envKeys[preset.keyHint];   // required only if NOT set on server
+}
+
 export function LLMSelector({ value, onChange }: Props) {
   const [showInstaller, setShowInstaller] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(REMOTE_PRESETS[0].model);
+
+  const { data: envKeys = {} } = useQuery({
+    queryKey: ["llm-env-keys"],
+    queryFn: getEnvKeys,
+    staleTime: 60_000,
+  });
 
   const { data: ollamaStatus } = useQuery({
     queryKey: ["ollama-status"],
@@ -126,42 +138,73 @@ export function LLMSelector({ value, onChange }: Props) {
             <select
               value={selectedPreset}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white
-                         focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-navy-deeper border border-navy rounded text-sm text-white
+                         focus:outline-none focus:ring-1 focus:ring-gold"
             >
-              {REMOTE_PRESETS.map((p) => (
-                <option key={p.model} value={p.model}>{p.label}</option>
-              ))}
+              {REMOTE_PRESETS.map((p) => {
+                const keySet = p.keyHint ? envKeys[p.keyHint] : true;
+                return (
+                  <option key={p.model} value={p.model}>
+                    {p.label}{keySet ? " ✓" : ""}
+                  </option>
+                );
+              })}
             </select>
           </div>
           {selectedPreset === "" && (
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Model string (litellm format)</label>
+              <label className="block text-xs text-blue-200/50 mb-1">Model string (litellm format)</label>
               <input
                 type="text"
                 value={value.model}
                 onChange={(e) => onChange({ ...value, model: e.target.value })}
                 placeholder="e.g. groq/mixtral-8x7b-32768"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white
-                           focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-navy-deeper border border-navy rounded text-sm text-white
+                           focus:outline-none focus:ring-1 focus:ring-gold"
               />
             </div>
           )}
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">
-              API Key
-              {keyHint && <span className="ml-1 text-gray-500">(or set <code className="font-mono">{keyHint}</code> env var on server)</span>}
-            </label>
-            <input
-              type="password"
-              value={value.api_key ?? ""}
-              onChange={(e) => onChange({ ...value, api_key: e.target.value })}
-              placeholder="Leave blank if set as environment variable"
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-sm text-white
-                         focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <p className="text-xs text-gray-600 mt-1">Key is stored only on this server, not sent to any third party.</p>
-          </div>
+
+          {/* API key section */}
+          {(() => {
+            const preset = REMOTE_PRESETS.find((p) => p.model === selectedPreset);
+            const required = preset ? keyRequiredFor(preset, envKeys) : false;
+            const keySet = preset?.keyHint ? envKeys[preset.keyHint] : false;
+
+            if (keySet && !required) {
+              return (
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-950/30 border border-green-900 rounded px-3 py-2">
+                  <span>✓</span>
+                  <span><code className="font-mono">{preset?.keyHint}</code> is set on the server — no key needed.</span>
+                </div>
+              );
+            }
+
+            return (
+              <div>
+                <label className="block text-xs mb-1">
+                  <span className={required ? "text-gold font-medium" : "text-blue-200/50"}>
+                    API Key{required ? " (required)" : ""}
+                  </span>
+                  {keyHint && !required && (
+                    <span className="ml-1 text-blue-200/30">
+                      or set <code className="font-mono">{keyHint}</code> on server
+                    </span>
+                  )}
+                </label>
+                <input
+                  type="password"
+                  value={value.api_key ?? ""}
+                  onChange={(e) => onChange({ ...value, api_key: e.target.value })}
+                  placeholder={required ? "Required — enter your API key" : "Optional if set as env var"}
+                  className={`w-full px-3 py-2 bg-navy-deeper border rounded text-sm text-white
+                             focus:outline-none focus:ring-1 focus:ring-gold
+                             ${required && !value.api_key ? "border-gold/60" : "border-navy"}`}
+                />
+                <p className="text-xs text-blue-200/20 mt-1">Key is sent to this server only, never stored permanently.</p>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

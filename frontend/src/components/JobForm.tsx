@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createJob } from "../api/jobs";
-import { LLMSelector, type LLMConfig } from "./LLMSelector";
+import { getEnvKeys } from "../api/llm";
+import { LLMSelector, type LLMConfig, REMOTE_PRESETS, keyRequiredFor } from "./LLMSelector";
 
 export function JobForm() {
   const qc = useQueryClient();
@@ -17,6 +18,12 @@ export function JobForm() {
   const [useLLMFallback, setUseLLMFallback] = useState(false);
   const [error, setError] = useState("");
   const lastSubmit = useRef<{ key: string; at: number } | null>(null);
+
+  const { data: envKeys = {} } = useQuery({
+    queryKey: ["llm-env-keys"],
+    queryFn: getEnvKeys,
+    staleTime: 60_000,
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: createJob,
@@ -42,6 +49,15 @@ export function JobForm() {
     if (inputMode === "urls" && (!track_urls || track_urls.length === 0)) {
       setError("Please enter at least one URL.");
       return;
+    }
+
+    if (llmConfig.source === "remote") {
+      const preset = REMOTE_PRESETS.find((p) => p.model === llmConfig.model);
+      if (preset && keyRequiredFor(preset, envKeys) && !llmConfig.api_key?.trim()) {
+        const keyName = preset.keyHint || "API key";
+        setError(`An API key is required for this provider. Enter it above or set ${keyName} on the server.`);
+        return;
+      }
     }
 
     const dedupKey = JSON.stringify({

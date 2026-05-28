@@ -12,6 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from confscraper.web import db as job_db
 from confscraper.web.routes import jobs as jobs_router
+from confscraper.web.routes import llm as llm_router
 from confscraper.web.routes import ollama as ollama_router
 
 _STATIC_DIR = Path(__file__).parent / "static"
@@ -57,6 +58,7 @@ def create_app(db_path: Path = Path("confdex.db")) -> FastAPI:
         await job_db.init_db()
 
     app.include_router(jobs_router.router)
+    app.include_router(llm_router.router)
     app.include_router(ollama_router.router)
 
     # Serve built React SPA if the frontend has been built
