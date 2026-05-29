@@ -18,5 +18,7 @@ _TRACKED_KEYS = [
 
 @router.get("/env-keys")
 async def get_env_keys() -> dict[str, bool]:
-    """Return which provider API keys are configured server-side (boolean only)."""
-    return {key: bool(os.environ.get(key, "").strip()) for key in _TRACKED_KEYS}
+    """Return provider key availability and feature flags (boolean only)."""
+    result = {key: bool(os.environ.get(key, "").strip()) for key in _TRACKED_KEYS}
+    result["DISABLE_OLLAMA"] = os.environ.get("DISABLE_OLLAMA", "false").strip().lower() == "true"
+    return result

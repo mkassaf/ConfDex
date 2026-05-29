@@ -144,7 +144,9 @@ export function JobForm() {
       </div>
 
       <div>
-        <label className="block text-xs text-blue-200/50 mb-2">LLM Configuration</label>
+        {!envKeys["DISABLE_OLLAMA"] && (
+          <label className="block text-xs text-blue-200/50 mb-2">LLM Configuration</label>
+        )}
         <LLMSelector value={llmConfig} onChange={setLlmConfig} />
       </div>
 

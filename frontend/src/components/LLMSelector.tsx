@@ -44,6 +44,15 @@ export function LLMSelector({ value, onChange }: Props) {
     staleTime: 60_000,
   });
 
+  const disableOllama = Boolean(envKeys["DISABLE_OLLAMA"]);
+
+  // When Ollama is disabled, force source to remote
+  useEffect(() => {
+    if (disableOllama && value.source === "local") {
+      onChange({ source: "remote", model: REMOTE_PRESETS[0].model, api_key: "" });
+    }
+  }, [disableOllama]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-select the first preset whose API key is already set on the server
   useEffect(() => {
     if (value.source !== "remote" || Object.keys(envKeys).length === 0) return;
@@ -87,26 +96,28 @@ export function LLMSelector({ value, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Source toggle */}
-      <div className="flex gap-2">
-        {(["local", "remote"] as const).map((src) => (
-          <button
-            key={src}
-            type="button"
-            onClick={() => setSource(src)}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
-              value.source === src
-                ? "bg-blue-600 border-blue-500 text-white"
-                : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
-            }`}
-          >
-            {src === "local" ? "🖥  Local (Ollama)" : "☁  Remote API"}
-          </button>
-        ))}
-      </div>
+      {/* Source toggle — hidden when Ollama is disabled server-side */}
+      {!disableOllama && (
+        <div className="flex gap-2">
+          {(["local", "remote"] as const).map((src) => (
+            <button
+              key={src}
+              type="button"
+              onClick={() => setSource(src)}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                value.source === src
+                  ? "bg-blue-600 border-blue-500 text-white"
+                  : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
+              }`}
+            >
+              {src === "local" ? "🖥  Local (Ollama)" : "☁  Remote API"}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Local — Ollama */}
-      {value.source === "local" && (
+      {/* Local — Ollama (only shown when Ollama is enabled) */}
+      {!disableOllama && value.source === "local" && (
         <div className="space-y-2">
           {ollamaStatus?.running === false && (
             <div className="text-xs text-yellow-400 bg-yellow-900/30 border border-yellow-700 rounded p-2">
@@ -143,8 +154,8 @@ export function LLMSelector({ value, onChange }: Props) {
         </div>
       )}
 
-      {/* Remote */}
-      {value.source === "remote" && (
+      {/* Remote — always shown when Ollama is disabled, otherwise only when selected */}
+      {(disableOllama || value.source === "remote") && (
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-gray-400 mb-1">Provider / Model</label>
