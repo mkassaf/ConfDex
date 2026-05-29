@@ -81,16 +81,11 @@ jobs:
           short-description: "Scrape, summarize, and score academic conference papers using local or remote LLMs."
           readme-filepath: ./README.md
 
-  # ── Deploy to server (optional) ─────────────────────────────────────────────
-  # Runs only when SSH_HOST variable is set (Settings → Variables → Actions).
-  # Required GitHub secrets:    SSH_PRIVATE_KEY, ADMIN_PASSWORD
-  # Required GitHub variables:  SSH_HOST, SSH_USER
+  # ── Deploy to server ─────────────────────────────────────────────────────────
+  # Required secrets: SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, ADMIN_PASSWORD
   deploy:
     needs: push
     runs-on: ubuntu-latest
-    # Uses a variable (not secret) for the if-condition — secrets cannot be
-    # evaluated in `if` expressions on GitHub Actions.
-    if: vars.SSH_HOST != ''
     steps:
       - name: Checkout (for compose files)
         uses: actions/checkout@v4
@@ -98,8 +93,8 @@ jobs:
       - name: Sync compose files to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host:     ${{ vars.SSH_HOST }}
-          username: ${{ vars.SSH_USER }}
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
           key:      ${{ secrets.SSH_PRIVATE_KEY }}
           source:   "docker-compose.yml,docker-compose.caddy.yml,Caddyfile"
           target:   "~/confdex"
@@ -107,20 +102,21 @@ jobs:
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host:     ${{ vars.SSH_HOST }}
-          username: ${{ vars.SSH_USER }}
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
           key:      ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/confdex
-            # Write .env so values survive container restarts and reboots
-            cat > .env <<'ENVEOF'
-            ADMIN_USERNAME=admin
-            ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
-            DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}
-            DISABLE_OLLAMA=${{ vars.DISABLE_OLLAMA }}
-            ENVEOF
-            # Strip leading whitespace from heredoc indentation
-            sed -i 's/^ *//' .env
+            echo "ADMIN_USERNAME=admin" > .env
+            echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+            echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+            echo "DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}" >> .env
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+            echo "MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}" >> .env
+            echo "DISABLE_OLLAMA=${{ secrets.DISABLE_OLLAMA }}" >> .env
+            echo "MAX_JOB_HISTORY_LIMIT=${{ secrets.MAX_JOB_HISTORY_LIMIT }}" >> .env
             docker image prune -af
             docker compose -f docker-compose.yml -f docker-compose.caddy.yml pull confdex
             docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --no-deps --force-recreate confdex
