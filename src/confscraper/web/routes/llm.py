@@ -20,5 +20,6 @@ _TRACKED_KEYS = [
 async def get_env_keys() -> dict[str, bool]:
     """Return provider key availability and feature flags (boolean only)."""
     result = {key: bool(os.environ.get(key, "").strip()) for key in _TRACKED_KEYS}
-    result["DISABLE_OLLAMA"] = os.environ.get("DISABLE_OLLAMA", "false").strip().lower() == "true"
+    _v = os.environ.get("DISABLE_OLLAMA", "").strip().lower()
+    result["DISABLE_OLLAMA"] = _v in ("true", "1", "yes")
     return result
