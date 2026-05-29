@@ -79,19 +79,47 @@ async def scrape(
 
             results = await asyncio.gather(*(fetch_one(u) for u in unique_urls))
 
-        _NON_PAPER = re.compile(
+        # Titles that are clearly not papers (prefix match)
+        _NON_PAPER_PREFIX = re.compile(
             r"^\s*(coffee|lunch|break|reception|dinner|keynote\s+break|"
             r"welcome|opening|closing|registration|social event|excursion|"
-            r"networking|poster session|demo session|panel|awards?)\b",
+            r"networking|poster session|demo session|panel|awards?|"
+            r"talk[\s:]+|open\s+spaces?|group\s+photo|announcement|"
+            r"feijoada|samba|banquet|gala|tour|visit|ceremony|"
+            r"ice\s*breaker|lightning\s+talk|invited\s+talk|"
+            r"industry\s+talk|sponsor|exhibition)\b",
+            re.IGNORECASE,
+        )
+
+        # Phrases anywhere in the title that mark non-papers
+        _NON_PAPER_ANYWHERE = re.compile(
+            r"\b(group\s+photo|award\s+ceremony|awards?\s+ceremony|"
+            r"best\s+paper\s+award|conference\s+dinner|gala\s+dinner|"
+            r"city\s+tour|social\s+event|excursion|announcement)\b",
             re.IGNORECASE,
         )
 
         for r in results:
-            if r is not None:
-                if _NON_PAPER.match(r.title or ""):
-                    logger.debug("Skipping non-paper event: %s", r.title)
-                    continue
-                papers.append(r)
+            if r is None:
+                continue
+            title = r.title or ""
+
+            # 1. Known event title patterns
+            if _NON_PAPER_PREFIX.match(title):
+                logger.debug("Skipping non-paper event (prefix): %s", title)
+                continue
+            if _NON_PAPER_ANYWHERE.search(title):
+                logger.debug("Skipping non-paper event (anywhere): %s", title)
+                continue
+
+            # 2. Structural signal: real papers have at least an abstract or a DOI.
+            #    Schedule entries (photos, open spaces, announcements, social events)
+            #    have neither.
+            if not r.abstract and not r.doi and not r.preprint_url:
+                logger.debug("Skipping entry with no abstract/DOI/preprint (likely non-paper): %s", title)
+                continue
+
+            papers.append(r)
 
         if failures:
             console.print(f"[yellow]Warning:[/yellow] {len(failures)} papers failed to fetch:")
