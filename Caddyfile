@@ -1,0 +1,12 @@
+confdex.duckdns.org {
+    reverse_proxy confdex:8000
+
+    # SSE support — disable buffering for streaming responses
+    @sse {
+        path /api/jobs/*/stream
+        path /api/ollama/pull
+    }
+    header @sse Cache-Control no-cache
+
+    encode gzip
+}
