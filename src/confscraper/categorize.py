@@ -40,11 +40,22 @@ Abstract: {abstract}
 # ── Stage 2: topic relevance scoring ────────────────────────────────────────
 
 _TOPIC_SCORE_PROMPT_V2 = """\
-You are evaluating whether a research paper is PRIMARILY about the given topic.
+You are evaluating whether a research paper is PRIMARILY about the given topic query.
 Be strict and conservative: a high score means the topic is the paper's central subject,
 not merely a tool, backdrop, or side contribution.
 
-Topic of Interest: "{topic}"
+Topic Query: "{topic}"
+
+Boolean query rules (apply these BEFORE scoring):
+  - AND  : ALL terms must each be a primary focus of the paper.
+           If any required term is absent or peripheral, cap the score at 5.
+           Example: "LLM AND testing" → paper must centrally address BOTH.
+  - OR   : ANY one term as the paper's primary focus qualifies for a high score.
+           Score based on whichever matched term fits best.
+           Example: "security OR privacy" → strong match on either is sufficient.
+  - Mixed: e.g. "LLM AND (testing OR verification)" → LLM is required; at least
+           one of testing/verification must also be a primary focus.
+  - No operator: treat the entire phrase as a single topic (standard behavior).
 
 Paper Information:
   Title:       {title}
@@ -53,29 +64,29 @@ Paper Information:
   Domain:      {domain}
   Methodology: {methodology}
 
-First ask yourself: "Would this paper be fundamentally different if the topic did not exist?"
-  - YES → the topic is its primary focus → score 7-10
-  - PARTIALLY → the topic is one of several themes → score 4-6
-  - NO  → the topic is peripheral, a tool, or background → score 0-3
+For each required term (AND), ask: "Would this paper be fundamentally different if this term did not exist?"
+  - YES for all required terms → score 7-10
+  - YES for some, NO for others → score 4-6
+  - NO for all → score 0-3
 
 Strict scoring scale:
-  9-10  The paper's core contribution IS the topic. The title/abstract make this unmistakable.
-  7-8   The topic is a primary focus. Removing it would make the paper's main claim collapse.
-  5-6   The topic is one of 2-3 equal themes, or a direct application domain.
-  3-4   The topic appears but is background, motivation, or a minor component only.
-  1-2   The topic is briefly mentioned or loosely related at best.
-  0     The topic is absent or the connection is a stretch.
+  9-10  All required terms ARE the paper's core contribution. Unmistakable from title/abstract.
+  7-8   All required terms are primary focus. Removing any would collapse the main claim.
+  5-6   One required term matches strongly; others are secondary — OR one of two OR terms matches.
+  3-4   Terms appear as background, motivation, or minor components only.
+  1-2   Terms are briefly mentioned or the connection is a stretch.
+  0     Required terms are absent.
 
 Important rules:
-  - Papers that USE the topic as a tool/baseline without studying it → score ≤ 3
-  - Papers that MENTION the topic in related work only → score ≤ 2
-  - Papers with the topic in a single example or case study → score ≤ 4
-  - Do NOT give 7+ unless the topic is central to the research question and contribution
+  - AND query: missing even one required term caps the score at 5
+  - Papers that USE a term as a tool/baseline without studying it → that term scores ≤ 3
+  - Mentions in related work only → ≤ 2 for that term
+  - Do NOT give 7+ unless ALL required (AND) terms are central to the contribution
 
 Return a JSON object with exactly these keys:
   "score"    : integer 0-10
-  "reasoning": 1-2 sentences explaining why the topic is or is not the primary focus
-  "matching" : list of specific aspects where the paper directly addresses the topic (empty if score < 4)
+  "reasoning": 1-2 sentences explaining how each query term matches or fails to match
+  "matching" : list of specific paper aspects that directly address each matched query term (empty if score < 4)
 
 Return ONLY valid JSON, no markdown fences.
 """

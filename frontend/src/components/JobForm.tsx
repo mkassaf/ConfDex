@@ -138,9 +138,14 @@ export function JobForm() {
           type="text"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          placeholder="e.g. software testing, LLM agents, security"
+          placeholder="e.g. LLM AND testing, security OR privacy, fuzzing"
           className={inputClass}
         />
+        <p className="text-xs text-blue-200/25 mt-1">
+          Supports <code className="font-mono text-blue-200/40">AND</code> (all required) and{" "}
+          <code className="font-mono text-blue-200/40">OR</code> (any match) — e.g.{" "}
+          <span className="text-blue-200/40 font-mono">LLM AND (testing OR verification)</span>
+        </p>
       </div>
 
       <div>
