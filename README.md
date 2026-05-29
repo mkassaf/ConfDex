@@ -508,4 +508,4 @@ npm install
 npm run dev   # starts Vite dev server on :5173, proxies /api to :8000
 ```
 
-Mustafa Assaf.
+Mustafa Assaf
