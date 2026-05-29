@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { createJob } from "../api/jobs";
+import { createJob, listJobs, type Job } from "../api/jobs";
 import { getEnvKeys } from "../api/llm";
 import { LLMSelector, type LLMConfig, REMOTE_PRESETS, keyRequiredFor } from "./LLMSelector";
 
@@ -21,7 +21,7 @@ export function JobForm({ onJobCreated }: Props) {
   });
   const [useLLMFallback, setUseLLMFallback] = useState(false);
   const [error, setError] = useState("");
-  const lastSubmit = useRef<{ key: string; at: number } | null>(null);
+  const [duplicateJob, setDuplicateJob] = useState<Job | null>(null);
 
   const { data: envKeys = {} } = useQuery({
     queryKey: ["llm-env-keys"],
@@ -29,63 +29,82 @@ export function JobForm({ onJobCreated }: Props) {
     staleTime: 60_000,
   });
 
+  const { data: existingJobs = [] } = useQuery({
+    queryKey: ["jobs"],
+    queryFn: listJobs,
+    staleTime: 10_000,
+  });
+
   const { mutate, isPending } = useMutation({
     mutationFn: createJob,
     onSuccess: (job) => {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       setError("");
+      setDuplicateJob(null);
       onJobCreated?.(job.id);
     },
     onError: (e: Error) => setError(e.message),
   });
 
-  function handleSubmit() {
-    setError("");
-
+  function buildParams() {
     const track_urls =
       inputMode === "urls"
         ? urlsText.split("\n").map((u) => u.trim()).filter(Boolean)
         : undefined;
-
-    if (inputMode === "conference" && !conference.trim()) {
-      setError("Please enter a conference slug.");
-      return;
-    }
-    if (inputMode === "urls" && (!track_urls || track_urls.length === 0)) {
-      setError("Please enter at least one URL.");
-      return;
-    }
-
-    if (llmConfig.source === "remote") {
-      const preset = REMOTE_PRESETS.find((p) => p.model === llmConfig.model);
-      if (preset && keyRequiredFor(preset, envKeys) && !llmConfig.api_key?.trim()) {
-        const keyName = preset.keyHint || "API key";
-        setError(`An API key is required for this provider. Enter it above or set ${keyName} on the server.`);
-        return;
-      }
-    }
-
-    const dedupKey = JSON.stringify({
-      conference: inputMode === "conference" ? conference.trim() : undefined,
-      track_urls,
-      topic: topic.trim(),
-      model: llmConfig.model,
-    });
-    const now = Date.now();
-    if (lastSubmit.current && lastSubmit.current.key === dedupKey && now - lastSubmit.current.at < 60_000) {
-      setError("This job was already submitted less than a minute ago. Please wait before resubmitting.");
-      return;
-    }
-    lastSubmit.current = { key: dedupKey, at: now };
-
-    mutate({
+    return {
       conference: inputMode === "conference" ? conference.trim() || undefined : undefined,
       track_urls,
       topic: topic.trim() || undefined,
       model: llmConfig.model,
       api_key: llmConfig.api_key || undefined,
       use_llm_fallback: useLLMFallback,
-    });
+    };
+  }
+
+  function findDuplicate(): Job | null {
+    const conf = inputMode === "conference" ? conference.trim() : undefined;
+    const urls = inputMode === "urls"
+      ? urlsText.split("\n").map((u) => u.trim()).filter(Boolean).sort().join("\n")
+      : undefined;
+    const t = topic.trim();
+
+    return existingJobs.find((j) => {
+      const jobUrls = Array.isArray(j.track_urls) ? [...j.track_urls].sort().join("\n") : undefined;
+      const conferenceMatch = conf ? j.conference === conf : false;
+      const urlsMatch = urls ? jobUrls === urls : false;
+      return (conferenceMatch || urlsMatch) && (j.topic ?? "") === t && j.model === llmConfig.model;
+    }) ?? null;
+  }
+
+  function validate(): string | null {
+    const track_urls = buildParams().track_urls;
+    if (inputMode === "conference" && !conference.trim()) return "Please enter a conference slug.";
+    if (inputMode === "urls" && (!track_urls || track_urls.length === 0)) return "Please enter at least one URL.";
+    if (llmConfig.source === "remote") {
+      const preset = REMOTE_PRESETS.find((p) => p.model === llmConfig.model);
+      if (preset && keyRequiredFor(preset, envKeys) && !llmConfig.api_key?.trim()) {
+        return `An API key is required for this provider. Enter it above or set ${preset.keyHint || "API key"} on the server.`;
+      }
+    }
+    return null;
+  }
+
+  function handleSubmit() {
+    setError("");
+    setDuplicateJob(null);
+    const validationError = validate();
+    if (validationError) { setError(validationError); return; }
+
+    const dup = findDuplicate();
+    if (dup) { setDuplicateJob(dup); return; }
+
+    mutate(buildParams());
+  }
+
+  function handleRerun() {
+    setDuplicateJob(null);
+    setError("");
+    mutate(buildParams());
   }
 
   const inputClass = "w-full px-3 py-2 bg-navy-deeper border border-navy rounded text-sm text-white placeholder-blue-200/30 focus:outline-none focus:ring-1 focus:ring-gold";
@@ -177,15 +196,46 @@ export function JobForm({ onJobCreated }: Props) {
         <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded p-2">{error}</p>
       )}
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={isPending}
-        className="w-full py-2.5 bg-gold hover:bg-gold-hover disabled:bg-navy disabled:text-blue-200/30
-                   text-navy-dark font-bold rounded-lg transition-colors text-sm"
-      >
-        {isPending ? "Starting…" : "Scrape & Summarize"}
-      </button>
+      {duplicateJob && (
+        <div className="rounded-lg border border-gold/40 bg-gold/5 p-3 space-y-2">
+          <p className="text-sm text-gold font-medium">Already scanned before</p>
+          <p className="text-xs text-blue-200/50">
+            This exact job was run on{" "}
+            <span className="text-blue-200/80">{new Date(duplicateJob.created_at).toLocaleString()}</span>
+            {duplicateJob.status === "done" && " and completed successfully"}.
+          </p>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => onJobCreated?.(duplicateJob.id)}
+              className="flex-1 py-2 bg-gold hover:bg-gold-hover text-navy-dark rounded-lg text-xs font-bold transition-colors"
+            >
+              View Results
+            </button>
+            <button
+              type="button"
+              onClick={handleRerun}
+              disabled={isPending}
+              className="flex-1 py-2 border border-navy hover:border-gold/40 text-blue-200/60 hover:text-white
+                         rounded-lg text-xs font-medium transition-colors disabled:opacity-40"
+            >
+              {isPending ? "Starting…" : "Re-run Scan"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!duplicateJob && (
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isPending}
+          className="w-full py-2.5 bg-gold hover:bg-gold-hover disabled:bg-navy disabled:text-blue-200/30
+                     text-navy-dark font-bold rounded-lg transition-colors text-sm"
+        >
+          {isPending ? "Starting…" : "Scrape & Summarize"}
+        </button>
+      )}
     </div>
   );
 }
