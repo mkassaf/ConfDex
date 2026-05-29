@@ -4,7 +4,11 @@ import { createJob } from "../api/jobs";
 import { getEnvKeys } from "../api/llm";
 import { LLMSelector, type LLMConfig, REMOTE_PRESETS, keyRequiredFor } from "./LLMSelector";
 
-export function JobForm() {
+interface Props {
+  onJobCreated?: (jobId: string) => void;
+}
+
+export function JobForm({ onJobCreated }: Props) {
   const qc = useQueryClient();
   const [inputMode, setInputMode] = useState<"conference" | "urls">("conference");
   const [conference, setConference] = useState("");
@@ -27,9 +31,10 @@ export function JobForm() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: createJob,
-    onSuccess: () => {
+    onSuccess: (job) => {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       setError("");
+      onJobCreated?.(job.id);
     },
     onError: (e: Error) => setError(e.message),
   });

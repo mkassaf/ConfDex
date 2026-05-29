@@ -104,7 +104,7 @@ export default function App() {
               </button>
             </div>
             <h2 className="md:hidden text-lg font-semibold text-white mb-5">New Scraping Job</h2>
-            <JobForm />
+            <JobForm onJobCreated={(id) => { setSelectedJobId(id); setShowForm(false); }} />
           </div>
         ) : selectedJobId ? (
           <JobDetail
