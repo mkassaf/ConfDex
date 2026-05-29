@@ -92,6 +92,18 @@ jobs:
     # evaluated in `if` expressions on GitHub Actions.
     if: vars.SSH_HOST != ''
     steps:
+      - name: Checkout (for compose files)
+        uses: actions/checkout@v4
+
+      - name: Sync compose files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host:     ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
+          source:   "docker-compose.yml,docker-compose.caddy.yml,Caddyfile"
+          target:   "~/confdex"
+
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -104,4 +116,5 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.caddy.yml pull confdex
             ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
             DISABLE_OLLAMA="${{ vars.DISABLE_OLLAMA }}" \
+            DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
             docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --no-deps --force-recreate confdex
