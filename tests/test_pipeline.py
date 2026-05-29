@@ -20,7 +20,8 @@ _NON_PAPER_PREFIX = re.compile(
 _NON_PAPER_ANYWHERE = re.compile(
     r"\b(group\s+photo|award\s+ceremony|awards?\s+ceremony|"
     r"best\s+paper\s+award|conference\s+dinner|gala\s+dinner|"
-    r"city\s+tour|social\s+event|excursion|announcement)\b",
+    r"city\s+tour|social\s+event|excursion|announcement|"
+    r"dinner|lunch|coffee|drinks?)\b",
     re.IGNORECASE,
 )
 
@@ -87,6 +88,11 @@ def test_non_paper_titles_are_matched(title: str):
     "XP 2027 Announcement",
     "ICSE Best Paper Award",
     "Conference Dinner and Social",
+    "Farewell Dinner",
+    "Welcome Lunch",
+    "Morning Coffee",
+    "Conference Drinks",
+    "Drink Reception",
     "Gala Dinner 2026",
     "City Tour — Optional",
 ])

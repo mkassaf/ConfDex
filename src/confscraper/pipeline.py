@@ -95,7 +95,8 @@ async def scrape(
         _NON_PAPER_ANYWHERE = re.compile(
             r"\b(group\s+photo|award\s+ceremony|awards?\s+ceremony|"
             r"best\s+paper\s+award|conference\s+dinner|gala\s+dinner|"
-            r"city\s+tour|social\s+event|excursion|announcement)\b",
+            r"city\s+tour|social\s+event|excursion|announcement|"
+            r"dinner|lunch|coffee|drinks?)\b",
             re.IGNORECASE,
         )
 
