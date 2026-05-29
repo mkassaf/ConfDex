@@ -138,7 +138,7 @@ export function JobForm() {
           type="text"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          placeholder="e.g. LLM AND testing, security OR privacy, fuzzing"
+          placeholder="e.g. LLM AND software testing  |  security OR privacy  |  fuzzing"
           className={inputClass}
         />
         <p className="text-xs text-blue-200/25 mt-1">
