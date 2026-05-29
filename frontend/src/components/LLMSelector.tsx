@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getOllamaModels, getOllamaStatus } from "../api/ollama";
 import { getEnvKeys, type EnvKeys } from "../api/llm";
@@ -43,6 +43,19 @@ export function LLMSelector({ value, onChange }: Props) {
     queryFn: getEnvKeys,
     staleTime: 60_000,
   });
+
+  // Auto-select the first preset whose API key is already set on the server
+  useEffect(() => {
+    if (value.source !== "remote" || Object.keys(envKeys).length === 0) return;
+    const current = REMOTE_PRESETS.find((p) => p.model === selectedPreset);
+    const currentOk = current?.keyHint ? envKeys[current.keyHint] : true;
+    if (currentOk) return; // current choice is already valid
+    const auto = REMOTE_PRESETS.find((p) => p.keyHint && envKeys[p.keyHint]);
+    if (auto) {
+      setSelectedPreset(auto.model);
+      onChange({ ...value, model: auto.model, api_key: "" });
+    }
+  }, [envKeys]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: ollamaStatus } = useQuery({
     queryKey: ["ollama-status"],
