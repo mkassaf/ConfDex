@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "conf-scraper"
+name = "ConfDex"
 version = "0.1.0"
 description = "Scrape paper titles, authors, and abstracts from conference websites"
 requires-python = ">=3.11"
