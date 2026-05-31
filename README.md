@@ -352,13 +352,15 @@ sudo systemctl enable --now confdex
 **Requires Python 3.11+**
 
 ```bash
-# From source
+pip install ConfDex
+```
+
+Or install from source:
+
+```bash
 git clone https://github.com/mkassaf/ConfDex.git
 cd ConfDex
 pip install -e .
-
-# Directly from GitHub
-pip install git+https://github.com/mkassaf/ConfDex.git
 ```
 
 > **macOS note:** if `confscraper` is not found after install, add the user bin to your PATH:
