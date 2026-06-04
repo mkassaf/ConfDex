@@ -34,9 +34,16 @@ class CreateJobRequest(BaseModel):
 
 
 @router.post("", status_code=201)
-async def create_job(body: CreateJobRequest, background_tasks: BackgroundTasks):
+async def create_job(body: CreateJobRequest, background_tasks: BackgroundTasks, request: Request):
     if not body.conference and not body.track_urls:
         raise HTTPException(status_code=400, detail="Provide conference slug or track_urls.")
+
+    authenticated = getattr(request.state, "authenticated", True)
+    if not authenticated and body.model and not body.model.startswith("ollama/") and not body.api_key:
+        raise HTTPException(
+            status_code=403,
+            detail="An API key is required when not logged in.",
+        )
 
     job = await job_db.create_job(
         conference=body.conference,

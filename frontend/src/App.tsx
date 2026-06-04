@@ -1,11 +1,19 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { JobForm } from "./components/JobForm";
 import { JobList } from "./components/JobList";
 import { JobDetail } from "./components/JobDetail";
+import { getAuthStatus } from "./api/auth";
 
 export default function App() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+
+  const { data: authStatus } = useQuery({
+    queryKey: ["auth-status"],
+    queryFn: getAuthStatus,
+    staleTime: 30_000,
+  });
 
   const showMain = showForm || selectedJobId !== null;
 
@@ -60,7 +68,19 @@ export default function App() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-navy">
+        <div className="px-4 py-3 border-t border-navy space-y-2">
+          {authStatus?.auth_required && (
+            authStatus.authenticated ? (
+              <p className="text-xs text-green-400/70 text-center">● Logged in</p>
+            ) : (
+              <a
+                href="/api/auth/login"
+                className="block w-full py-1.5 text-center text-xs font-medium border border-gold/40 text-gold/80 hover:text-gold hover:border-gold rounded-lg transition-colors"
+              >
+                Login to use server API keys
+              </a>
+            )
+          )}
           <p className="text-xs text-blue-200/25 text-center">Design by Mustafa Assaf</p>
         </div>
       </aside>

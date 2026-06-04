@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from confscraper.web import db as job_db
+from confscraper.web.routes import auth as auth_router
 from confscraper.web.routes import jobs as jobs_router
 from confscraper.web.routes import llm as llm_router
 from confscraper.web.routes import ollama as ollama_router
@@ -26,15 +27,18 @@ _STATIC_DIR = Path(__file__).parent / "static"
 
 
 class BasicAuthMiddleware(BaseHTTPMiddleware):
-    """Require HTTP Basic Auth when ADMIN_PASSWORD env var is set."""
+    """Tag requests with auth state. Only /api/auth/login challenges the browser when credentials are missing."""
 
     async def dispatch(self, request: Request, call_next):
         password = os.environ.get("ADMIN_PASSWORD", "").strip()
+
         if not password:
+            request.state.authenticated = True
             return await call_next(request)
 
         username = os.environ.get("ADMIN_USERNAME", "admin").strip()
 
+        authenticated = False
         auth = request.headers.get("Authorization", "")
         if auth.startswith("Basic "):
             try:
@@ -42,16 +46,20 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
                 provided_user, provided_pass = decoded.split(":", 1)
                 user_ok = secrets.compare_digest(provided_user.encode(), username.encode())
                 pass_ok = secrets.compare_digest(provided_pass.encode(), password.encode())
-                if user_ok and pass_ok:
-                    return await call_next(request)
+                authenticated = user_ok and pass_ok
             except Exception:
                 pass
 
-        return Response(
-            content="Unauthorized",
-            status_code=401,
-            headers={"WWW-Authenticate": 'Basic realm="ConfDex"'},
-        )
+        request.state.authenticated = authenticated
+
+        if request.url.path == "/api/auth/login" and not authenticated:
+            return Response(
+                content="Unauthorized",
+                status_code=401,
+                headers={"WWW-Authenticate": 'Basic realm="ConfDex"'},
+            )
+
+        return await call_next(request)
 
 
 def create_app(db_path: Path = Path("confdex.db")) -> FastAPI:
@@ -87,6 +95,7 @@ def create_app(db_path: Path = Path("confdex.db")) -> FastAPI:
             except Exception:
                 logger.exception("Watchdog error")
 
+    app.include_router(auth_router.router)
     app.include_router(jobs_router.router)
     app.include_router(llm_router.router)
     app.include_router(ollama_router.router)

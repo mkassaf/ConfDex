@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getOllamaModels, getOllamaStatus } from "../api/ollama";
 import { getEnvKeys, type EnvKeys } from "../api/llm";
+import { getAuthStatus } from "../api/auth";
 import { OllamaInstaller } from "./OllamaInstaller";
 
 export interface LLMConfig {
@@ -43,6 +44,14 @@ export function LLMSelector({ value, onChange }: Props) {
     queryFn: getEnvKeys,
     staleTime: 60_000,
   });
+
+  const { data: authStatus } = useQuery({
+    queryKey: ["auth-status"],
+    queryFn: getAuthStatus,
+    staleTime: 30_000,
+  });
+
+  const showAuthNotice = authStatus?.auth_required && !authStatus?.authenticated;
 
   const disableOllama = Boolean(envKeys["DISABLE_OLLAMA"]);
 
@@ -157,6 +166,16 @@ export function LLMSelector({ value, onChange }: Props) {
       {/* Remote — always shown when Ollama is disabled, otherwise only when selected */}
       {(disableOllama || value.source === "remote") && (
         <div className="space-y-3">
+          {showAuthNotice && (
+            <div className="flex items-start gap-2 text-xs bg-navy-dark border border-navy rounded px-3 py-2">
+              <span className="text-yellow-400 mt-0.5">⚠</span>
+              <span className="text-blue-200/60">
+                Not logged in — server API keys are unavailable.{" "}
+                <a href="/api/auth/login" className="text-gold hover:text-gold-hover underline">Log in</a>
+                {" "}or provide your own key below.
+              </span>
+            </div>
+          )}
           <div>
             <label className="block text-xs text-gray-400 mb-1">Provider / Model</label>
             <select
@@ -225,7 +244,7 @@ export function LLMSelector({ value, onChange }: Props) {
                              focus:outline-none focus:ring-1 focus:ring-gold
                              ${required && !value.api_key ? "border-gold/60" : "border-navy"}`}
                 />
-                <p className="text-xs text-blue-200/20 mt-1">Key is sent to this server only, never stored permanently.</p>
+                <p className="text-xs text-blue-200/30 mt-1">Your key is only used to process this job and is not stored or shared outside this server.</p>
               </div>
             );
           })()}
