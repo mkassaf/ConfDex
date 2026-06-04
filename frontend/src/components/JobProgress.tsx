@@ -1,30 +1,13 @@
 import { useEffect, useState } from "react";
 
 function ErrorDetail({ error }: { error: string }) {
-  const [expanded, setExpanded] = useState(false);
   const lines = error.trim().split("\n");
-  const summary = [...lines].reverse().find((l: string) => l.trim().length > 0) ?? error;
-  const hasTrace = lines.length > 1;
+  const raw = [...lines].reverse().find((l: string) => l.trim().length > 0) ?? error;
+  const summary = raw.replace(/^[\w.]+Error:\s*/, "");
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded p-3">
-        {summary}
-      </p>
-      {hasTrace && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="text-xs text-red-400/60 hover:text-red-400 underline"
-        >
-          {expanded ? "Hide details" : "Show full traceback"}
-        </button>
-      )}
-      {expanded && (
-        <pre className="text-xs text-red-400/70 bg-red-950/20 border border-red-900/50 rounded p-3 overflow-auto max-h-48 whitespace-pre-wrap">
-          {error}
-        </pre>
-      )}
-    </div>
+    <p className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded p-3">
+      {summary}
+    </p>
   );
 }
 
