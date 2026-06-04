@@ -37,9 +37,6 @@ COPY pyproject.toml ./
 RUN mkdir -p src/confscraper && touch src/confscraper/__init__.py
 RUN uv pip install .
 
-# Install Playwright browser — cached unless playwright version changes
-RUN python -m playwright install chromium
-
 # Copy actual source (changes often — after all slow steps)
 COPY src/ src/
 # Copy built frontend into the static dir baked into the image
@@ -50,7 +47,11 @@ RUN uv pip install --no-deps .
 EXPOSE 8000
 VOLUME ["/data"]
 
-CMD ["confscraper", "serve", \
-     "--host", "0.0.0.0", \
-     "--port", "8000", \
-     "--db", "/data/confdex.db"]
+# Store Playwright browsers in the persistent data volume so they survive image updates
+ENV PLAYWRIGHT_BROWSERS_PATH=/data/playwright
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["confscraper", "serve", "--host", "0.0.0.0", "--port", "8000", "--db", "/data/confdex.db"]
