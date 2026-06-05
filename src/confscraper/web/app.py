@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from confscraper.web import db as job_db
+from confscraper.web import session as session_store
 from confscraper.web.routes import auth as auth_router
 from confscraper.web.routes import jobs as jobs_router
 from confscraper.web.routes import llm as llm_router
@@ -49,6 +50,12 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
                 authenticated = user_ok and pass_ok
             except Exception:
                 pass
+
+        # Fall back to session cookie so JS fetch() calls work after login
+        if not authenticated:
+            cookie_token = request.cookies.get(session_store.SESSION_COOKIE, "")
+            if session_store.valid(cookie_token):
+                authenticated = True
 
         request.state.authenticated = authenticated
 

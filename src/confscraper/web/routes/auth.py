@@ -5,6 +5,8 @@ import os
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
+from confscraper.web import session as session_store
+
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
@@ -19,5 +21,24 @@ async def get_auth_status(request: Request) -> dict:
 
 @router.get("/login")
 async def login(request: Request):
-    """Triggers HTTP Basic Auth (middleware handles the 401 challenge), then redirects to the app."""
-    return RedirectResponse(url="/", status_code=302)
+    """Triggers HTTP Basic Auth (middleware handles the 401 challenge), then sets a session cookie and redirects."""
+    token = session_store.create()
+    response = RedirectResponse(url="/", status_code=302)
+    response.set_cookie(
+        session_store.SESSION_COOKIE,
+        token,
+        httponly=True,
+        samesite="lax",
+    )
+    return response
+
+
+@router.get("/logout")
+async def logout(request: Request):
+    """Revoke the session cookie and redirect to the app root."""
+    token = request.cookies.get(session_store.SESSION_COOKIE, "")
+    if token:
+        session_store.revoke(token)
+    response = RedirectResponse(url="/", status_code=302)
+    response.delete_cookie(session_store.SESSION_COOKIE)
+    return response

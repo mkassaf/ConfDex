@@ -71,7 +71,15 @@ export default function App() {
         <div className="px-4 py-3 border-t border-navy space-y-2">
           {authStatus?.auth_required && (
             authStatus.authenticated ? (
-              <p className="text-xs text-green-400/70 text-center">● Logged in</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-green-400/70">● Logged in</span>
+                <a
+                  href="/api/auth/logout"
+                  className="text-xs text-blue-200/30 hover:text-blue-200/60 transition-colors"
+                >
+                  Log out
+                </a>
+              </div>
             ) : (
               <a
                 href="/api/auth/login"
