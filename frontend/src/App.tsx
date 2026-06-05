@@ -1,19 +1,28 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { JobForm } from "./components/JobForm";
 import { JobList } from "./components/JobList";
 import { JobDetail } from "./components/JobDetail";
-import { getAuthStatus } from "./api/auth";
+import { getAuthStatus, logout } from "./api/auth";
 
 export default function App() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: authStatus } = useQuery({
     queryKey: ["auth-status"],
     queryFn: getAuthStatus,
     staleTime: 30_000,
   });
+
+  async function handleLogout() {
+    await logout();
+    // Invalidate all auth-dependent queries so they re-fetch without the
+    // session cookie (and without Basic Auth, since fetch() never sends it).
+    await queryClient.invalidateQueries({ queryKey: ["auth-status"] });
+    await queryClient.invalidateQueries({ queryKey: ["llm-env-keys"] });
+  }
 
   const showMain = showForm || selectedJobId !== null;
 
@@ -73,12 +82,13 @@ export default function App() {
             authStatus.authenticated ? (
               <div className="flex items-center justify-between">
                 <span className="text-xs text-green-400/70">● Logged in</span>
-                <a
-                  href="/api/auth/logout"
+                <button
+                  type="button"
+                  onClick={handleLogout}
                   className="text-xs text-blue-200/30 hover:text-blue-200/60 transition-colors"
                 >
                   Log out
-                </a>
+                </button>
               </div>
             ) : (
               <a

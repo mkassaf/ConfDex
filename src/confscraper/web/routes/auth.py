@@ -35,10 +35,11 @@ async def login(request: Request):
 
 @router.get("/logout")
 async def logout(request: Request):
-    """Revoke the session cookie and redirect to the app root."""
+    """Revoke the session cookie. Returns JSON so the frontend can call this via fetch()."""
     token = request.cookies.get(session_store.SESSION_COOKIE, "")
     if token:
         session_store.revoke(token)
-    response = RedirectResponse(url="/", status_code=302)
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content={"ok": True})
     response.delete_cookie(session_store.SESSION_COOKIE)
     return response

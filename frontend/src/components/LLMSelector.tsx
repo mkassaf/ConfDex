@@ -39,16 +39,17 @@ export function LLMSelector({ value, onChange }: Props) {
   const [showInstaller, setShowInstaller] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(REMOTE_PRESETS[0].model);
 
-  const { data: envKeys = {} } = useQuery({
-    queryKey: ["llm-env-keys"],
-    queryFn: getEnvKeys,
-    staleTime: 60_000,
-  });
-
   const { data: authStatus } = useQuery({
     queryKey: ["auth-status"],
     queryFn: getAuthStatus,
     staleTime: 30_000,
+  });
+
+  const { data: envKeys = {} } = useQuery({
+    queryKey: ["llm-env-keys", authStatus?.authenticated],
+    queryFn: getEnvKeys,
+    staleTime: 60_000,
+    enabled: authStatus !== undefined,
   });
 
   const showAuthNotice = authStatus?.auth_required && !authStatus?.authenticated;
