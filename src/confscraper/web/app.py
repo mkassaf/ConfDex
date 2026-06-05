@@ -28,7 +28,10 @@ _STATIC_DIR = Path(__file__).parent / "static"
 
 
 class BasicAuthMiddleware(BaseHTTPMiddleware):
-    """Tag requests with auth state. Only /api/auth/login challenges the browser when credentials are missing."""
+    """The login endpoint accepts HTTP Basic Auth and issues a session cookie.
+    Every other endpoint authenticates via session cookie only — Basic Auth headers
+    are intentionally ignored elsewhere so browsers that proactively re-send stored
+    credentials cannot bypass a logout."""
 
     async def dispatch(self, request: Request, call_next):
         password = os.environ.get("ADMIN_PASSWORD", "").strip()
@@ -39,32 +42,31 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
 
         username = os.environ.get("ADMIN_USERNAME", "admin").strip()
 
-        authenticated = False
-        auth = request.headers.get("Authorization", "")
-        if auth.startswith("Basic "):
-            try:
-                decoded = base64.b64decode(auth[6:]).decode("utf-8")
-                provided_user, provided_pass = decoded.split(":", 1)
-                user_ok = secrets.compare_digest(provided_user.encode(), username.encode())
-                pass_ok = secrets.compare_digest(provided_pass.encode(), password.encode())
-                authenticated = user_ok and pass_ok
-            except Exception:
-                pass
+        if request.url.path == "/api/auth/login":
+            # Only the login path accepts Basic Auth credentials
+            authenticated = False
+            auth = request.headers.get("Authorization", "")
+            if auth.startswith("Basic "):
+                try:
+                    decoded = base64.b64decode(auth[6:]).decode("utf-8")
+                    provided_user, provided_pass = decoded.split(":", 1)
+                    user_ok = secrets.compare_digest(provided_user.encode(), username.encode())
+                    pass_ok = secrets.compare_digest(provided_pass.encode(), password.encode())
+                    authenticated = user_ok and pass_ok
+                except Exception:
+                    pass
 
-        # Fall back to session cookie so JS fetch() calls work after login
-        if not authenticated:
+            if not authenticated:
+                return Response(
+                    content="Unauthorized",
+                    status_code=401,
+                    headers={"WWW-Authenticate": 'Basic realm="ConfDex"'},
+                )
+            request.state.authenticated = True
+        else:
+            # All other endpoints: session cookie is the only valid credential
             cookie_token = request.cookies.get(session_store.SESSION_COOKIE, "")
-            if session_store.valid(cookie_token):
-                authenticated = True
-
-        request.state.authenticated = authenticated
-
-        if request.url.path == "/api/auth/login" and not authenticated:
-            return Response(
-                content="Unauthorized",
-                status_code=401,
-                headers={"WWW-Authenticate": 'Basic realm="ConfDex"'},
-            )
+            request.state.authenticated = session_store.valid(cookie_token)
 
         return await call_next(request)
 
