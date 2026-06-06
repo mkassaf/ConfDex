@@ -6,6 +6,9 @@ Works with any `conf.researchr.org` URL — track pages, workshop home pages, an
 
 Available as a **CLI tool** or a **self-hosted web app**.
 
+> **Try it now:** [https://confdex.duckdns.org](https://confdex.duckdns.org)
+> You can bring your own API key — we do not store or log it anywhere.
+
 ---
 
 ## Table of Contents
