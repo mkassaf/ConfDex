@@ -44,9 +44,11 @@ def test_create_job_missing_conference_and_urls(client):
     assert "conference" in r.json()["detail"].lower() or "track_urls" in r.json()["detail"].lower()
 
 
-def test_create_job_missing_model(client):
+def test_create_job_no_model_scrape_only(client):
+    # model is now optional; omitting it means scrape-only (no LLM)
     r = client.post("/api/jobs", json={"conference": "icse-2026"})
-    assert r.status_code == 422  # pydantic validation
+    assert r.status_code == 201
+    assert r.json()["model"] == ""
 
 
 # ── GET /api/jobs ─────────────────────────────────────────────────────────────
