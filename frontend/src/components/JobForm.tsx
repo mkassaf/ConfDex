@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createJob, listJobs, type Job } from "../api/jobs";
 import { getEnvKeys } from "../api/llm";
-import { LLMSelector, type LLMConfig, REMOTE_PRESETS, keyRequiredFor } from "./LLMSelector";
+import { LLMSelector, type LLMConfig, REMOTE_PRESETS, keyRequiredFor, isLLMAvailable } from "./LLMSelector";
 
 interface Props {
   onJobCreated?: (jobId: string) => void;
@@ -28,6 +28,11 @@ export function JobForm({ onJobCreated }: Props) {
     queryFn: getEnvKeys,
     staleTime: 60_000,
   });
+
+  const llmAvailable = useMemo(
+    () => isLLMAvailable(llmConfig, envKeys),
+    [llmConfig, envKeys],
+  );
 
   const { data: existingJobs = [] } = useQuery({
     queryKey: ["jobs"],
@@ -85,6 +90,9 @@ export function JobForm({ onJobCreated }: Props) {
       if (preset && keyRequiredFor(preset, envKeys) && !llmConfig.api_key?.trim()) {
         return `An API key is required for this provider. Enter it above or set ${preset.keyHint || "API key"} on the server.`;
       }
+    }
+    if (!llmAvailable && topic.trim()) {
+      return "Topic filtering requires an LLM. Select a model above or clear the topic field.";
     }
     return null;
   }
@@ -155,21 +163,28 @@ export function JobForm({ onJobCreated }: Props) {
       </div>
 
       <div>
-        <label className="block text-xs text-blue-200/50 mb-1">
-          Topic for relevance scoring <span className="text-blue-200/30">(optional)</span>
+        <label className={`block text-xs mb-1 ${llmAvailable ? "text-blue-200/50" : "text-blue-200/25"}`}>
+          Topic for relevance scoring{" "}
+          <span className="text-blue-200/30">(optional)</span>
+          {!llmAvailable && (
+            <span className="ml-2 text-blue-200/30 italic">— requires LLM</span>
+          )}
         </label>
         <input
           type="text"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          placeholder="e.g. LLM AND software testing  |  security OR privacy  |  fuzzing"
-          className={inputClass}
+          disabled={!llmAvailable}
+          placeholder={llmAvailable ? "e.g. LLM AND software testing  |  security OR privacy  |  fuzzing" : "Select an LLM above to enable topic filtering"}
+          className={`${inputClass} ${!llmAvailable ? "opacity-40 cursor-not-allowed" : ""}`}
         />
-        <p className="text-xs text-blue-200/25 mt-1">
-          Supports <code className="font-mono text-blue-200/40">AND</code> (all required) and{" "}
-          <code className="font-mono text-blue-200/40">OR</code> (any match) — e.g.{" "}
-          <span className="text-blue-200/40 font-mono">LLM AND (testing OR verification)</span>
-        </p>
+        {llmAvailable && (
+          <p className="text-xs text-blue-200/25 mt-1">
+            Supports <code className="font-mono text-blue-200/40">AND</code> (all required) and{" "}
+            <code className="font-mono text-blue-200/40">OR</code> (any match) — e.g.{" "}
+            <span className="text-blue-200/40 font-mono">LLM AND (testing OR verification)</span>
+          </p>
+        )}
       </div>
 
       <div>
@@ -179,18 +194,20 @@ export function JobForm({ onJobCreated }: Props) {
         <LLMSelector value={llmConfig} onChange={setLlmConfig} />
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
-          id="llm-fallback"
-          type="checkbox"
-          checked={useLLMFallback}
-          onChange={(e) => setUseLLMFallback(e.target.checked)}
-          className="rounded border-navy bg-navy-dark accent-gold"
-        />
-        <label htmlFor="llm-fallback" className="text-xs text-blue-200/50">
-          Use LLM fallback for abstract extraction
-        </label>
-      </div>
+      {llmAvailable && (
+        <div className="flex items-center gap-2">
+          <input
+            id="llm-fallback"
+            type="checkbox"
+            checked={useLLMFallback}
+            onChange={(e) => setUseLLMFallback(e.target.checked)}
+            className="rounded border-navy bg-navy-dark accent-gold"
+          />
+          <label htmlFor="llm-fallback" className="text-xs text-blue-200/50">
+            Use LLM fallback for abstract extraction
+          </label>
+        </div>
+      )}
 
       {error && (
         <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded p-2">{error}</p>
@@ -233,7 +250,7 @@ export function JobForm({ onJobCreated }: Props) {
           className="w-full py-2.5 bg-gold hover:bg-gold-hover disabled:bg-navy disabled:text-blue-200/30
                      text-navy-dark font-bold rounded-lg transition-colors text-sm"
         >
-          {isPending ? "Starting…" : "Scrape & Summarize"}
+          {isPending ? "Starting…" : llmAvailable ? "Scrape & Summarize" : "Scrape Papers"}
         </button>
       )}
     </div>

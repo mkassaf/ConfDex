@@ -18,6 +18,7 @@ export interface Summary {
   title: string;
   source_url: string;
   doi?: string;
+  abstract?: string;
   summary?: string;
   keywords: string[];
   methodology?: string;

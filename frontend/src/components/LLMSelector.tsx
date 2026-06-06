@@ -8,7 +8,7 @@ import { OllamaInstaller } from "./OllamaInstaller";
 export interface LLMConfig {
   model: string;
   api_key?: string;
-  source: "local" | "remote";
+  source: "local" | "remote" | "none";
 }
 
 interface Props {
@@ -35,6 +35,15 @@ export function keyRequiredFor(preset: typeof REMOTE_PRESETS[number], envKeys: E
   return !envKeys[preset.keyHint];   // required only if NOT set on server
 }
 
+/** Returns true when the current config has a working LLM (key available or local model). */
+export function isLLMAvailable(config: LLMConfig, envKeys: EnvKeys): boolean {
+  if (config.source === "none") return false;
+  if (config.source === "local") return true;
+  const preset = REMOTE_PRESETS.find((p) => p.model === config.model);
+  if (!preset) return true; // custom model — assume user knows
+  return !keyRequiredFor(preset, envKeys) || Boolean(config.api_key?.trim());
+}
+
 export function LLMSelector({ value, onChange }: Props) {
   const [showInstaller, setShowInstaller] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(REMOTE_PRESETS[0].model);
@@ -56,7 +65,7 @@ export function LLMSelector({ value, onChange }: Props) {
 
   const disableOllama = Boolean(envKeys["DISABLE_OLLAMA"]);
 
-  // When Ollama is disabled, force source to remote
+  // When Ollama is disabled, force source to remote (but allow "none")
   useEffect(() => {
     if (disableOllama && value.source === "local") {
       onChange({ source: "remote", model: REMOTE_PRESETS[0].model, api_key: "" });
@@ -88,8 +97,10 @@ export function LLMSelector({ value, onChange }: Props) {
     enabled: value.source === "local",
   });
 
-  function setSource(src: "local" | "remote") {
-    if (src === "local") {
+  function setSource(src: "local" | "remote" | "none") {
+    if (src === "none") {
+      onChange({ source: "none", model: "", api_key: undefined });
+    } else if (src === "local") {
       onChange({ source: "local", model: `ollama/${ollamaModels[0] ?? "llama3.2"}`, api_key: undefined });
     } else {
       const preset = REMOTE_PRESETS[0];
@@ -106,27 +117,46 @@ export function LLMSelector({ value, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Source toggle — hidden when Ollama is disabled server-side */}
-      {!disableOllama && (
-        <div className="flex gap-2">
-          {(["local", "remote"] as const).map((src) => (
-            <button
-              key={src}
-              type="button"
-              onClick={() => setSource(src)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                value.source === src
-                  ? "bg-blue-600 border-blue-500 text-white"
-                  : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
-              }`}
-            >
-              {src === "local" ? "🖥  Local (Ollama)" : "☁  Remote API"}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Source toggle */}
+      <div className="flex gap-2">
+        {!disableOllama && (
+          <button
+            type="button"
+            onClick={() => setSource("local")}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
+              value.source === "local"
+                ? "bg-blue-600 border-blue-500 text-white"
+                : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
+            }`}
+          >
+            🖥  Local (Ollama)
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setSource("remote")}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
+            value.source === "remote"
+              ? "bg-blue-600 border-blue-500 text-white"
+              : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
+          }`}
+        >
+          ☁  Remote API
+        </button>
+        <button
+          type="button"
+          onClick={() => setSource("none")}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
+            value.source === "none"
+              ? "bg-navy border-blue-200/30 text-blue-200/70"
+              : "bg-gray-800 border-gray-700 text-gray-400 hover:text-white"
+          }`}
+        >
+          ✕  None
+        </button>
+      </div>
 
-      {/* Local — Ollama (only shown when Ollama is enabled) */}
+      {/* Local — Ollama */}
       {!disableOllama && value.source === "local" && (
         <div className="space-y-2">
           {ollamaStatus?.running === false && (
@@ -164,8 +194,15 @@ export function LLMSelector({ value, onChange }: Props) {
         </div>
       )}
 
+      {/* None — scrape only, no LLM */}
+      {value.source === "none" && (
+        <div className="text-xs text-blue-200/50 bg-navy-dark border border-navy rounded px-3 py-2">
+          Papers will be scraped and listed with their raw abstracts — no AI analysis or topic scoring.
+        </div>
+      )}
+
       {/* Remote — always shown when Ollama is disabled, otherwise only when selected */}
-      {(disableOllama || value.source === "remote") && (
+      {value.source !== "none" && (disableOllama || value.source === "remote") && (
         <div className="space-y-3">
           {showAuthNotice && (
             <div className="flex items-start gap-2 text-xs bg-navy-dark border border-navy rounded px-3 py-2">

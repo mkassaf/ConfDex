@@ -201,7 +201,7 @@ def categorize_paper_v2(
     Returns a dict with: title, source_url, doi, summary, keywords,
     methodology, domain, and (when topic given) score, score_reasoning, score_matching.
     """
-    base: dict = {"title": paper.title, "source_url": paper.source_url, "doi": paper.doi}
+    base: dict = {"title": paper.title, "source_url": paper.source_url, "doi": paper.doi, "abstract": paper.abstract}
     if topic is not None:
         base["score"] = None
         base["score_reasoning"] = None
@@ -239,6 +239,7 @@ def categorize_paper_v2(
         "title": paper.title,
         "source_url": paper.source_url,
         "doi": paper.doi,
+        "abstract": paper.abstract,
         "summary": summary,
         "keywords": keywords,
         "methodology": methodology,

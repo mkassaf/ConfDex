@@ -44,12 +44,13 @@ async def _run_job_inner(job_id: str) -> None:
         logger.error("Job %s not found", job_id)
         return
 
-    model = job["model"]
+    model = job["model"] or ""
     api_key = job["api_key"]
     topic = job["topic"]
     conference = job.get("conference")
     track_urls: list[str] = job.get("track_urls") or []
-    use_llm_fallback = bool(job.get("use_llm_fallback", False))
+    use_llm = bool(model.strip())
+    use_llm_fallback = use_llm and bool(job.get("use_llm_fallback", False))
 
     await job_db.update_job(job_id, status="scraping", phase="Discovering papers…")
 
@@ -70,24 +71,50 @@ async def _run_job_inner(job_id: str) -> None:
                 llm_api_key=api_key,
             )
 
+        papers = result.papers
+        total = len(papers)
+
         await job_db.update_job(
             job_id,
             phase=f"Scraped {result.paper_count} papers",
             progress_current=0,
-            progress_total=result.paper_count,
+            progress_total=total,
             scrape_result=result.model_dump(mode="json"),
         )
+
+        if not use_llm:
+            # No LLM: store papers with their raw scraped data
+            summaries = [
+                {
+                    "title": p.title,
+                    "source_url": p.source_url,
+                    "doi": p.doi,
+                    "abstract": p.abstract,
+                    "summary": None,
+                    "keywords": [],
+                    "methodology": None,
+                    "domain": None,
+                }
+                for p in papers
+            ]
+            await job_db.update_job(
+                job_id,
+                status="done",
+                phase="Complete",
+                progress_current=total,
+                progress_total=total,
+                summaries=summaries,
+                error=None,
+            )
+            return
 
         # ── Summarize ────────────────────────────────────────────────────────
         await job_db.update_job(job_id, status="summarizing", phase="Summarizing papers…")
 
-        papers = result.papers
-        total = len(papers)
         done = 0
 
         from confscraper.categorize import categorize_paper_v2
 
-        summaries: list[dict] = []
         sem = asyncio.Semaphore(3)
 
         async def _one(paper):

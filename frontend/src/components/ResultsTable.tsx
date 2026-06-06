@@ -144,12 +144,17 @@ export function ResultsTable({ summaries, jobId }: Props) {
                     <tr key={`${row.id}-exp`} className="bg-navy-dark/50">
                       <td colSpan={columns.length + 1} className="px-5 py-4">
                         <div className="space-y-3 max-w-3xl">
-                          {s.summary && (
+                          {s.summary ? (
                             <div>
                               <p className="text-xs text-blue-200/40 uppercase font-medium mb-1">Summary</p>
                               <p className="text-sm text-blue-50">{s.summary}</p>
                             </div>
-                          )}
+                          ) : s.abstract ? (
+                            <div>
+                              <p className="text-xs text-blue-200/40 uppercase font-medium mb-1">Abstract</p>
+                              <p className="text-sm text-blue-50">{s.abstract}</p>
+                            </div>
+                          ) : null}
                           {s.score_reasoning && (
                             <div>
                               <p className="text-xs text-blue-200/40 uppercase font-medium mb-1">Relevance reasoning</p>

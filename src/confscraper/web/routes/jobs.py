@@ -28,7 +28,7 @@ class CreateJobRequest(BaseModel):
     conference: Optional[str] = None
     track_urls: Optional[list[str]] = None
     topic: Optional[str] = None
-    model: str
+    model: str = ""
     api_key: Optional[str] = None
     use_llm_fallback: bool = False
 
@@ -39,7 +39,8 @@ async def create_job(body: CreateJobRequest, background_tasks: BackgroundTasks, 
         raise HTTPException(status_code=400, detail="Provide conference slug or track_urls.")
 
     authenticated = getattr(request.state, "authenticated", True)
-    if not authenticated and body.model and not body.model.startswith("ollama/") and not body.api_key:
+    use_llm = bool(body.model and body.model.strip())
+    if not authenticated and use_llm and not body.model.startswith("ollama/") and not body.api_key:
         raise HTTPException(
             status_code=403,
             detail="An API key is required when not logged in.",
@@ -121,7 +122,7 @@ async def download_job(job_id: str, format: str = "json"):
 
     if format == "csv":
         out = io.StringIO()
-        fields = ["title", "source_url", "doi", "summary", "keywords", "methodology",
+        fields = ["title", "source_url", "doi", "abstract", "summary", "keywords", "methodology",
                   "domain", "score", "score_reasoning", "score_matching"]
         writer = csv.DictWriter(out, fieldnames=fields, extrasaction="ignore", lineterminator="\n")
         writer.writeheader()
