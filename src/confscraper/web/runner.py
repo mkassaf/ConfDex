@@ -114,8 +114,9 @@ async def _run_job_inner(job_id: str) -> None:
         done = 0
 
         from confscraper.categorize import categorize_paper_v2
+        from confscraper.llm import llm_concurrency
 
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(llm_concurrency(model, 3))
 
         async def _one(paper):
             nonlocal done

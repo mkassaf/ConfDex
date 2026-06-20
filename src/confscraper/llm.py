@@ -24,6 +24,24 @@ DEFAULT_MODEL = "claude-sonnet-4-6"
 FREEINFERENCE_PREFIX = "freeinference/"
 FREEINFERENCE_API_BASE = "https://freeinference.org/v1"
 FREEINFERENCE_ENV = "FREEINFERENCE_API_KEY"
+# freeinference.org rejects more than ~2 parallel requests, so we serialize calls.
+FREEINFERENCE_MAX_CONCURRENCY = 1
+
+
+def is_freeinference(model: str) -> bool:
+    """True if the model routes through the freeinference.org endpoint."""
+    return model.startswith(FREEINFERENCE_PREFIX)
+
+
+def llm_concurrency(model: str, default: int) -> int:
+    """
+    Max parallel LLM requests allowed for this model's provider.
+    freeinference.org enforces a strict parallel-request cap, so calls to it are
+    serialized regardless of the requested default.
+    """
+    if is_freeinference(model):
+        return min(default, FREEINFERENCE_MAX_CONCURRENCY)
+    return default
 
 _PAPER_LIST_PROMPT = """\
 You are given the full HTML of a conference program or workshop page.
