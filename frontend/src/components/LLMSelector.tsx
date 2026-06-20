@@ -27,6 +27,13 @@ export const REMOTE_PRESETS = [
   { label: "Google Gemini 2.0 Flash", model: "gemini/gemini-2.0-flash", keyHint: "GEMINI_API_KEY" },
   { label: "Groq Llama 3.3 70B", model: "groq/llama-3.3-70b-versatile", keyHint: "GROQ_API_KEY" },
   { label: "Mistral Large", model: "mistral/mistral-large-latest", keyHint: "MISTRAL_API_KEY" },
+  { label: "FreeInference GLM-5.1", model: "freeinference/glm-5.1", keyHint: "FREEINFERENCE_API_KEY" },
+  { label: "FreeInference GLM-5 Turbo", model: "freeinference/glm-5-turbo", keyHint: "FREEINFERENCE_API_KEY" },
+  { label: "FreeInference MiniMax M3", model: "freeinference/minimax-m3", keyHint: "FREEINFERENCE_API_KEY" },
+  { label: "FreeInference MiniMax Fast", model: "freeinference/minimax-fast", keyHint: "FREEINFERENCE_API_KEY" },
+  { label: "FreeInference MiniMax M2.7", model: "freeinference/minimax-m2.7", keyHint: "FREEINFERENCE_API_KEY" },
+  { label: "FreeInference Qwen3.6 35B", model: "freeinference/qwen3.6-35b", keyHint: "FREEINFERENCE_API_KEY" },
+  { label: "FreeInference GPT-OSS 20B (free)", model: "freeinference/gpt-oss-20b", keyHint: "FREEINFERENCE_API_KEY" },
   { label: "Custom / Other", model: "", keyHint: "" },
 ];
 

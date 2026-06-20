@@ -115,6 +115,7 @@ jobs:
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
             echo "MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}" >> .env
+            echo "FREEINFERENCE_API_KEY=${{ secrets.FREEINFERENCE_API_KEY }}" >> .env
             echo "DISABLE_OLLAMA=${{ secrets.DISABLE_OLLAMA }}" >> .env
             echo "MAX_JOB_HISTORY_LIMIT=${{ secrets.MAX_JOB_HISTORY_LIMIT }}" >> .env
             docker image prune -af

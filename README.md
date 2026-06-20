@@ -177,6 +177,7 @@ Job history and results are stored in a Docker volume (`confdex_data`). Download
 | `GEMINI_API_KEY` | Google Gemini API key |
 | `GROQ_API_KEY` | Groq API key |
 | `MISTRAL_API_KEY` | Mistral API key |
+| `FREEINFERENCE_API_KEY` | [freeinference.org](https://freeinference.org) API key (GLM, MiniMax, Qwen, GPT-OSS) |
 
 LLM keys set here are used as server-side defaults. You can also enter a key directly in the web UI per job.
 
@@ -440,6 +441,7 @@ API keys are resolved automatically — no need to pass `--api-key` if the env v
 | Google Gemini | `gemini/gemini-1.5-pro` | `GEMINI_API_KEY` |
 | Groq | `groq/llama-3.3-70b-versatile` | `GROQ_API_KEY` |
 | Mistral | `mistral/mistral-large-latest` | `MISTRAL_API_KEY` |
+| FreeInference | `freeinference/glm-5.1`, `freeinference/minimax-m3`, `freeinference/qwen3.6-35b`, `freeinference/gpt-oss-20b` | `FREEINFERENCE_API_KEY` |
 | Ollama (local) | `ollama/llama3.2` | *(none needed)* |
 
 Any other [litellm-compatible](https://docs.litellm.ai/docs/providers) provider also works.

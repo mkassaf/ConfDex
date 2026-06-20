@@ -18,6 +18,13 @@ litellm.suppress_debug_info = True
 # Default model — overridden via --model flag or LLM_MODEL env var
 DEFAULT_MODEL = "claude-sonnet-4-6"
 
+# freeinference.org — an OpenAI-compatible endpoint. Models are addressed with a
+# "freeinference/<model>" string (e.g. "freeinference/glm-5.1") and routed through
+# litellm's openai-compatible path with this base URL + FREEINFERENCE_API_KEY.
+FREEINFERENCE_PREFIX = "freeinference/"
+FREEINFERENCE_API_BASE = "https://freeinference.org/v1"
+FREEINFERENCE_ENV = "FREEINFERENCE_API_KEY"
+
 _PAPER_LIST_PROMPT = """\
 You are given the full HTML of a conference program or workshop page.
 Extract every accepted paper you can find. For each paper return a JSON object with:
@@ -76,16 +83,37 @@ def _resolve_api_key(model: str, api_key: str | None) -> str | None:
     return os.environ.get("LITELLM_API_KEY")
 
 
-def _call(model: str, api_key: str | None, prompt: str, max_tokens: int = 8192) -> str:
+def prepare_litellm_call(model: str, api_key: str | None) -> tuple[str, dict]:
+    """
+    Resolve the model string and connection kwargs for a litellm completion.
+
+    Routes ``freeinference/<model>`` to the freeinference.org OpenAI-compatible
+    endpoint (rewriting to ``openai/<model>`` + api_base). Otherwise resolves the
+    provider API key from the environment. Returns ``(model, extra_kwargs)`` where
+    extra_kwargs may contain ``api_key`` and/or ``api_base``.
+    """
+    if model.startswith(FREEINFERENCE_PREFIX):
+        real = model[len(FREEINFERENCE_PREFIX):]
+        extra: dict = {"api_base": FREEINFERENCE_API_BASE}
+        key = api_key or os.environ.get(FREEINFERENCE_ENV)
+        if key:
+            extra["api_key"] = key
+        else:
+            logger.warning("No API key for freeinference model %r — set %s", model, FREEINFERENCE_ENV)
+        return f"openai/{real}", extra
+
     key = _resolve_api_key(model, api_key)
-    kwargs: dict = dict(
+    return model, ({"api_key": key} if key else {})
+
+
+def _call(model: str, api_key: str | None, prompt: str, max_tokens: int = 8192) -> str:
+    model, extra = prepare_litellm_call(model, api_key)
+    response = litellm.completion(
         model=model,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
+        **extra,
     )
-    if key:
-        kwargs["api_key"] = key
-    response = litellm.completion(**kwargs)
     return response.choices[0].message.content.strip()
 
 

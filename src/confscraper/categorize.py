@@ -8,6 +8,7 @@ from typing import Callable
 
 import litellm
 
+from confscraper.llm import prepare_litellm_call
 from confscraper.models import Paper
 
 logger = logging.getLogger(__name__)
@@ -129,14 +130,14 @@ def _parse_json(raw: str) -> dict:
 
 
 def _call_llm(prompt: str, model: str, api_key: str | None, max_tokens: int = 1024) -> dict:
+    model, extra = prepare_litellm_call(model, api_key)
     kwargs: dict = dict(
         model=model,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
         timeout=60,
+        **extra,
     )
-    if api_key:
-        kwargs["api_key"] = api_key
     response = litellm.completion(**kwargs)
     raw = response.choices[0].message.content.strip()
     return _parse_json(raw)
@@ -148,13 +149,13 @@ def validate_model(model: str, api_key: str | None) -> None:
     Ollama models that haven't been pulled — before processing all papers.
     Raises with a clear message on failure.
     """
+    model, extra = prepare_litellm_call(model, api_key)
     kwargs: dict = dict(
         model=model,
         messages=[{"role": "user", "content": "Hi"}],
         max_tokens=1,
+        **extra,
     )
-    if api_key:
-        kwargs["api_key"] = api_key
     try:
         litellm.completion(**kwargs)
     except Exception as e:
